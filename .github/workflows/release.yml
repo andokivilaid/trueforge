@@ -17,10 +17,8 @@
 # NODE_AUTH_TOKEN. id-token is granted only on the publish jobs.
 name: Release
 
-on:
-  push:
-    branches: [main]
-  workflow_dispatch:
+# FORK-DISABLED: must never npm/PyPI publish @truefoundry/* from andokivilaid/trueforge.
+on: {}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

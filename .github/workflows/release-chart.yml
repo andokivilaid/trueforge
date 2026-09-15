@@ -2,19 +2,8 @@ name: Publish Helm chart
 
 # A chart-release PR merge creates the tag/GitHub Release and publishes the
 # chart. Human charts/trueforge@* tags use the same publish job.
-on:
-  pull_request:
-    types: [closed]
-    branches: [main]
-  push:
-    tags:
-      - 'charts/trueforge@*'
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: Existing tag to publish (e.g. charts/trueforge@0.1.0)
-        required: true
-        type: string
+# FORK-DISABLED: must never publish Helm to TrueFoundry artifactory from this fork.
+on: {}
 
 concurrency:
   group: publish-helm-chart

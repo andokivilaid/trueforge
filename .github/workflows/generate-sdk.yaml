@@ -2,28 +2,8 @@ name: Generate SDK
 
 # Regenerates the OpenAPI document and the SDKs, and commits them to the branch.
 # Fork PRs cannot receive that commit; main regenerates after merge.
-on:
-  # Manual regen on main if the post-merge push job missed or failed.
-  workflow_dispatch:
-  push:
-    branches: [main]
-    # Only sources the document is built from; tests and metadata cannot change it.
-    paths:
-      - 'packages/trueforge/src/**'
-      - 'packages/trueforge/scripts/**'
-      - 'packages/trueforge-core/src/**'
-      - '.github/fern/**'
-      - '.github/workflows/generate-sdk.yaml'
-      - 'scripts/generate-sdk.sh'
-  pull_request:
-    types: [opened, synchronize, reopened]
-    paths:
-      - 'packages/trueforge/src/**'
-      - 'packages/trueforge/scripts/**'
-      - 'packages/trueforge-core/src/**'
-      - '.github/fern/**'
-      - '.github/workflows/generate-sdk.yaml'
-      - 'scripts/generate-sdk.sh'
+# FORK-DISABLED: uses TrueFoundry GitHub App secrets; regen locally via package scripts.
+on: {}
 
 concurrency:
   group: generate-sdk-${{ github.head_ref || github.ref_name }}

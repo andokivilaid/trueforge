@@ -1,9 +1,7 @@
 name: Sync commit to trueforge-devtest-deployment
 
-on:
-  workflow_dispatch:
-  push:
-    branches: [main]
+# FORK-DISABLED: must never write to truefoundry/* from andokivilaid/trueforge.
+on: {}
 
 concurrency:
   group: deploy-devtest

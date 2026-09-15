@@ -1,12 +1,8 @@
 name: Push sandbox image
 
 # main / dispatch: push trueforge-sandbox:<sha>, then open a PR that updates sandboxImage.json.
-on:
-  workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'packages/trueforge-core/scripts/sandbox/**'
+# FORK-DISABLED: must never push sandbox images to TrueFoundry artifactory from this fork.
+on: {}
 
 concurrency:
   group: push-sandbox-image
