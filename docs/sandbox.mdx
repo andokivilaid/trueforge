@@ -27,18 +27,26 @@ That means:
 
 ## Configuring a provider
 
-**Daytona is the only sandbox provider supported today.** Support for additional providers is planned.
+Supported providers today: **[Daytona](https://www.daytona.io)** and **[E2B](https://e2b.dev)**. Configure one provider per tenant under **Settings → Sandbox providers**.
 
-Open **Settings → Sandbox providers**, pick the [Daytona](https://www.daytona.io) preset from the catalog, and paste your API key.
+### Daytona
+
+Pick the Daytona preset from the catalog and paste your API key.
 
 <Note>
   The Daytona API key needs permission to create **snapshots**, not only sandboxes. The first time you configure the
   provider, TrueForge builds a release snapshot in your Daytona account, and every sandbox it starts afterwards is
   cloned from that snapshot. Create the key with **Sandboxes** access and **Snapshots** write (create) permission.
 
-  If the key is missing snapshot permission, configuring the provider fails 
+  If the key is missing snapshot permission, configuring the provider fails
   even though the key is otherwise valid. If you hit that, check the key's permissions before regenerating it.
 </Note>
+
+### E2B
+
+Pick the E2B preset and paste your [E2B API key](https://e2b.dev/dashboard?tab=keys). TrueForge builds a template from the release sandbox image in your E2B account (async on first configure), then creates sandboxes from that template.
+
+Advanced settings expose **exec timeout** and **sandbox lifetime**. Auto-archive / auto-delete apply to Daytona only.
 
 <div style={{ position: "relative", boxSizing: "content-box", width: "100%", aspectRatio: "1.75", padding: "40px 0" }}>
   <iframe
@@ -65,7 +73,7 @@ Optional controls:
 
 - Provisioned on demand when the agent needs code, files, skills, or Code Mode.
 - Reused across turns in the same session (files persist).
-- Stopped after idle time, then archived and eventually deleted per the provider settings.
+- Stopped after idle time, then archived and eventually deleted per the provider settings (Daytona), or after the configured sandbox lifetime (E2B).
 
 ## Credential safety
 

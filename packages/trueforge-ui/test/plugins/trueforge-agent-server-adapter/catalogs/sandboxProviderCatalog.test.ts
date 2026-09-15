@@ -25,6 +25,17 @@ describe('sandboxProviderCatalog mappers', () => {
     auth: { apiKey: 'dtn_secret' },
   };
 
+  const e2bCatalog = {
+    type: 'e2b' as const,
+    execTimeoutMs: 60000,
+    sandboxTimeoutMs: 300000,
+  };
+
+  const e2bConfigured = {
+    ...e2bCatalog,
+    auth: { apiKey: 'e2b_secret' },
+  };
+
   function configuredResponse({
     status,
     statusReason,
@@ -50,6 +61,18 @@ describe('sandboxProviderCatalog mappers', () => {
       autoStopIntervalInMinutes: 5,
       autoArchiveIntervalInMinutes: 60,
       autoDeleteIntervalInMinutes: 7200,
+    });
+  });
+
+  it('maps E2B catalog lifetime onto UI autoStop minutes', () => {
+    assert.deepEqual(toUiCatalogEntry(e2bCatalog), {
+      id: 'e2b',
+      name: 'E2B',
+      type: 'e2b',
+      execTimeoutMs: 60000,
+      autoStopIntervalInMinutes: 5,
+      autoArchiveIntervalInMinutes: 0,
+      autoDeleteIntervalInMinutes: 0,
     });
   });
 
@@ -107,6 +130,17 @@ describe('sandboxProviderCatalog mappers', () => {
         ...configFromHarness(harnessCatalog),
       }),
       harnessConfigured,
+    );
+  });
+
+  it('round-trips E2B config into harness upsert body', () => {
+    assert.deepEqual(
+      toHarnessManifest({
+        type: 'e2b',
+        apiKey: 'e2b_secret',
+        ...configFromHarness(e2bCatalog),
+      }),
+      e2bConfigured,
     );
   });
 

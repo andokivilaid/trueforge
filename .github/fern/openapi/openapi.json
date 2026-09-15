@@ -609,44 +609,76 @@
         ]
       },
       "CatalogSandboxProvider": {
-        "additionalProperties": false,
-        "properties": {
-          "auto_archive_interval_in_minutes": {
-            "description": "Minutes before Daytona auto-archives the sandbox (0 disables).",
-            "minimum": 0,
-            "type": "integer"
-          },
-          "auto_delete_interval_in_minutes": {
-            "description": "Minutes before Daytona auto-deletes the sandbox (0 disables).",
-            "minimum": 0,
-            "type": "integer"
-          },
-          "auto_stop_interval_in_minutes": {
-            "description": "Minutes of idle time before Daytona auto-stops the sandbox (0 disables).",
-            "minimum": 0,
-            "type": "integer"
-          },
-          "exec_timeout_ms": {
-            "description": "Default sandbox command exec timeout in milliseconds.",
-            "exclusiveMinimum": 0,
-            "type": "integer"
-          },
-          "type": {
-            "description": "Daytona sandbox provider.",
-            "enum": [
-              "daytona"
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "auto_archive_interval_in_minutes": {
+                "description": "Minutes before Daytona auto-archives the sandbox (0 disables).",
+                "minimum": 0,
+                "type": "integer"
+              },
+              "auto_delete_interval_in_minutes": {
+                "description": "Minutes before Daytona auto-deletes the sandbox (0 disables).",
+                "minimum": 0,
+                "type": "integer"
+              },
+              "auto_stop_interval_in_minutes": {
+                "description": "Minutes of idle time before Daytona auto-stops the sandbox (0 disables).",
+                "minimum": 0,
+                "type": "integer"
+              },
+              "exec_timeout_ms": {
+                "description": "Default sandbox command exec timeout in milliseconds.",
+                "exclusiveMinimum": 0,
+                "type": "integer"
+              },
+              "type": {
+                "description": "Daytona sandbox provider.",
+                "enum": [
+                  "daytona"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "exec_timeout_ms",
+              "auto_stop_interval_in_minutes",
+              "auto_archive_interval_in_minutes",
+              "auto_delete_interval_in_minutes"
             ],
-            "type": "string"
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "exec_timeout_ms": {
+                "description": "Default sandbox command exec timeout in milliseconds.",
+                "exclusiveMinimum": 0,
+                "type": "integer"
+              },
+              "sandbox_timeout_ms": {
+                "description": "Maximum lifetime of an E2B sandbox in milliseconds.",
+                "exclusiveMinimum": 0,
+                "type": "integer"
+              },
+              "type": {
+                "description": "E2B sandbox provider.",
+                "enum": [
+                  "e2b"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "exec_timeout_ms",
+              "sandbox_timeout_ms"
+            ],
+            "type": "object"
           }
-        },
-        "required": [
-          "type",
-          "exec_timeout_ms",
-          "auto_stop_interval_in_minutes",
-          "auto_archive_interval_in_minutes",
-          "auto_delete_interval_in_minutes"
-        ],
-        "type": "object"
+        ]
       },
       "CatalogSkill": {
         "additionalProperties": false,
@@ -1238,6 +1270,21 @@
             "type": "boolean"
           }
         },
+        "type": "object"
+      },
+      "E2BSandboxProviderAuth": {
+        "additionalProperties": false,
+        "description": "E2B authentication credentials.",
+        "properties": {
+          "api_key": {
+            "description": "E2B API key. Responses are redacted; on PUT, a real value sets/rotates and a redacted value keeps the stored key.",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "api_key"
+        ],
         "type": "object"
       },
       "ExecuteScheduleRunRequest": {
@@ -3664,48 +3711,84 @@
         "type": "object"
       },
       "SandboxProviderManifest": {
-        "additionalProperties": false,
-        "properties": {
-          "auth": {
-            "$ref": "#/components/schemas/DaytonaSandboxProviderAuth"
-          },
-          "auto_archive_interval_in_minutes": {
-            "description": "Minutes before Daytona auto-archives the sandbox (0 disables).",
-            "minimum": 0,
-            "type": "integer"
-          },
-          "auto_delete_interval_in_minutes": {
-            "description": "Minutes before Daytona auto-deletes the sandbox (0 disables).",
-            "minimum": 0,
-            "type": "integer"
-          },
-          "auto_stop_interval_in_minutes": {
-            "description": "Minutes of idle time before Daytona auto-stops the sandbox (0 disables).",
-            "minimum": 0,
-            "type": "integer"
-          },
-          "exec_timeout_ms": {
-            "description": "Default sandbox command exec timeout in milliseconds.",
-            "exclusiveMinimum": 0,
-            "type": "integer"
-          },
-          "type": {
-            "description": "Daytona sandbox provider.",
-            "enum": [
-              "daytona"
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "auth": {
+                "$ref": "#/components/schemas/DaytonaSandboxProviderAuth"
+              },
+              "auto_archive_interval_in_minutes": {
+                "description": "Minutes before Daytona auto-archives the sandbox (0 disables).",
+                "minimum": 0,
+                "type": "integer"
+              },
+              "auto_delete_interval_in_minutes": {
+                "description": "Minutes before Daytona auto-deletes the sandbox (0 disables).",
+                "minimum": 0,
+                "type": "integer"
+              },
+              "auto_stop_interval_in_minutes": {
+                "description": "Minutes of idle time before Daytona auto-stops the sandbox (0 disables).",
+                "minimum": 0,
+                "type": "integer"
+              },
+              "exec_timeout_ms": {
+                "description": "Default sandbox command exec timeout in milliseconds.",
+                "exclusiveMinimum": 0,
+                "type": "integer"
+              },
+              "type": {
+                "description": "Daytona sandbox provider.",
+                "enum": [
+                  "daytona"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "auth",
+              "exec_timeout_ms",
+              "auto_stop_interval_in_minutes",
+              "auto_archive_interval_in_minutes",
+              "auto_delete_interval_in_minutes"
             ],
-            "type": "string"
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "auth": {
+                "$ref": "#/components/schemas/E2BSandboxProviderAuth"
+              },
+              "exec_timeout_ms": {
+                "description": "Default sandbox command exec timeout in milliseconds.",
+                "exclusiveMinimum": 0,
+                "type": "integer"
+              },
+              "sandbox_timeout_ms": {
+                "description": "Maximum lifetime of an E2B sandbox in milliseconds.",
+                "exclusiveMinimum": 0,
+                "type": "integer"
+              },
+              "type": {
+                "description": "E2B sandbox provider.",
+                "enum": [
+                  "e2b"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "auth",
+              "exec_timeout_ms",
+              "sandbox_timeout_ms"
+            ],
+            "type": "object"
           }
-        },
-        "required": [
-          "type",
-          "auth",
-          "exec_timeout_ms",
-          "auto_stop_interval_in_minutes",
-          "auto_archive_interval_in_minutes",
-          "auto_delete_interval_in_minutes"
-        ],
-        "type": "object"
+        ]
       },
       "Schedule": {
         "additionalProperties": false,

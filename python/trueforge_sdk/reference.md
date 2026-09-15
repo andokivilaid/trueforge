@@ -4409,7 +4409,7 @@ Upserts the single sandbox provider for this tenant: creates it or replaces its 
 <dd>
 
 ```python
-from trueforge_sdk import TrueForge, SandboxProviderManifest, DaytonaSandboxProviderAuth
+from trueforge_sdk import TrueForge, SandboxProviderManifestAutoArchiveIntervalInMinutes, DaytonaSandboxProviderAuth
 
 client = TrueForge(
     token="<token>",
@@ -4417,7 +4417,7 @@ client = TrueForge(
 )
 
 client.settings.sandbox_providers.create_or_update(
-    manifest=SandboxProviderManifest(
+    manifest=SandboxProviderManifestAutoArchiveIntervalInMinutes(
         auth=DaytonaSandboxProviderAuth(
             api_key="api_key",
         ),

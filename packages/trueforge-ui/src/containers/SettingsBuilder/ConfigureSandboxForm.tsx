@@ -22,6 +22,8 @@ type ConfigureSandboxFormProps = {
   description?: string;
   /** Prefills config fields; apiKey is never autofilled. */
   initialConfig?: SandboxProviderConfig | null;
+  /** Provider kind — drives which advanced fields are shown. */
+  providerType?: string;
   /** When false (updates), empty apiKey means keep the existing key. */
   requireApiKey?: boolean;
   busy?: boolean;
@@ -46,6 +48,12 @@ function parseNonNegInt(raw: string): number | null {
   return n;
 }
 
+function parsePositiveInt(raw: string): number | null {
+  const n = parseNonNegInt(raw);
+  if (n === null || n <= 0) return null;
+  return n;
+}
+
 const ConfigureSandboxForm = ({
   open,
   onOpenChange,
@@ -53,10 +61,12 @@ const ConfigureSandboxForm = ({
   title,
   description,
   initialConfig = null,
+  providerType,
   requireApiKey = true,
   busy = false,
   error,
 }: ConfigureSandboxFormProps) => {
+  const isE2B = providerType === 'e2b';
   const [execTimeoutMs, setExecTimeoutMs] = useState('');
   const [autoStopIntervalInMinutes, setAutoStopIntervalInMinutes] = useState('');
   const [autoArchiveIntervalInMinutes, setAutoArchiveIntervalInMinutes] = useState('');
@@ -89,10 +99,10 @@ const ConfigureSandboxForm = ({
     onOpenChange(nextOpen);
   };
 
-  const execTimeout = parseNonNegInt(execTimeoutMs);
-  const autoStop = parseNonNegInt(autoStopIntervalInMinutes);
-  const autoArchive = parseNonNegInt(autoArchiveIntervalInMinutes);
-  const autoDelete = parseNonNegInt(autoDeleteIntervalInMinutes);
+  const execTimeout = parsePositiveInt(execTimeoutMs);
+  const autoStop = isE2B ? parsePositiveInt(autoStopIntervalInMinutes) : parseNonNegInt(autoStopIntervalInMinutes);
+  const autoArchive = isE2B ? 0 : parseNonNegInt(autoArchiveIntervalInMinutes);
+  const autoDelete = isE2B ? 0 : parseNonNegInt(autoDeleteIntervalInMinutes);
   const trimmedKey = apiKey.trim();
 
   const isValid =
@@ -155,7 +165,7 @@ const ConfigureSandboxForm = ({
               onChange={event => {
                 setApiKey(event.target.value);
               }}
-              placeholder={requireApiKey ? 'dtn_...' : 'Leave blank to keep existing'}
+              placeholder={requireApiKey ? (isE2B ? 'e2b_...' : 'dtn_...') : 'Leave blank to keep existing'}
               autoFocus
               className={inputClassName}
             />
@@ -186,7 +196,7 @@ const ConfigureSandboxForm = ({
                 <input
                   id="sandbox-exec-timeout"
                   type="number"
-                  min={0}
+                  min={1}
                   required
                   value={execTimeoutMs}
                   onChange={event => {
@@ -199,57 +209,61 @@ const ConfigureSandboxForm = ({
 
               <div>
                 <label htmlFor="sandbox-auto-stop" className="mb-1.5 block text-sm font-medium text-text-primary">
-                  Auto-stop interval (minutes)
+                  {isE2B ? 'Sandbox lifetime (minutes)' : 'Auto-stop interval (minutes)'}
                 </label>
                 <input
                   id="sandbox-auto-stop"
                   type="number"
-                  min={0}
+                  min={isE2B ? 1 : 0}
                   required
                   value={autoStopIntervalInMinutes}
                   onChange={event => {
                     setAutoStopIntervalInMinutes(event.target.value);
                   }}
-                  placeholder="15"
+                  placeholder={isE2B ? '5' : '15'}
                   className={inputClassName}
                 />
               </div>
 
-              <div>
-                <label htmlFor="sandbox-auto-archive" className="mb-1.5 block text-sm font-medium text-text-primary">
-                  Auto-archive interval (minutes)
-                </label>
-                <input
-                  id="sandbox-auto-archive"
-                  type="number"
-                  min={0}
-                  required
-                  value={autoArchiveIntervalInMinutes}
-                  onChange={event => {
-                    setAutoArchiveIntervalInMinutes(event.target.value);
-                  }}
-                  placeholder="10080"
-                  className={inputClassName}
-                />
-              </div>
+              {!isE2B ? (
+                <>
+                  <div>
+                    <label htmlFor="sandbox-auto-archive" className="mb-1.5 block text-sm font-medium text-text-primary">
+                      Auto-archive interval (minutes)
+                    </label>
+                    <input
+                      id="sandbox-auto-archive"
+                      type="number"
+                      min={0}
+                      required
+                      value={autoArchiveIntervalInMinutes}
+                      onChange={event => {
+                        setAutoArchiveIntervalInMinutes(event.target.value);
+                      }}
+                      placeholder="10080"
+                      className={inputClassName}
+                    />
+                  </div>
 
-              <div>
-                <label htmlFor="sandbox-auto-delete" className="mb-1.5 block text-sm font-medium text-text-primary">
-                  Auto-delete interval (minutes)
-                </label>
-                <input
-                  id="sandbox-auto-delete"
-                  type="number"
-                  min={0}
-                  required
-                  value={autoDeleteIntervalInMinutes}
-                  onChange={event => {
-                    setAutoDeleteIntervalInMinutes(event.target.value);
-                  }}
-                  placeholder="43200"
-                  className={inputClassName}
-                />
-              </div>
+                  <div>
+                    <label htmlFor="sandbox-auto-delete" className="mb-1.5 block text-sm font-medium text-text-primary">
+                      Auto-delete interval (minutes)
+                    </label>
+                    <input
+                      id="sandbox-auto-delete"
+                      type="number"
+                      min={0}
+                      required
+                      value={autoDeleteIntervalInMinutes}
+                      onChange={event => {
+                        setAutoDeleteIntervalInMinutes(event.target.value);
+                      }}
+                      placeholder="43200"
+                      className={inputClassName}
+                    />
+                  </div>
+                </>
+              ) : null}
             </AccordionDetails>
           </Accordion>
         </div>

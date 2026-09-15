@@ -1,7 +1,9 @@
-/** Sandbox provider construction + Daytona snapshot status refresh. */
+/** Sandbox provider construction + snapshot/template status refresh. */
 import { Daytona, DaytonaError } from '@daytona/sdk';
 import {
   DaytonaSandboxProvider,
+  E2BSandboxProvider,
+  isE2BAuthError,
   SANDBOX_IMAGE_URI,
   TFYSandboxProvider,
   withTimeout,
@@ -13,10 +15,15 @@ import configuration from '../config';
 import type { ISandboxProviderStore, SandboxProviderRecord } from '../db/sandboxProviderStore';
 import {
   toDaytonaSandboxProviderInput,
+  toE2BSandboxProviderInput,
+  type DaytonaSandboxProvider as DaytonaSandboxProviderManifest,
+  type E2BSandboxProvider as E2BSandboxProviderManifest,
   type SandboxBuildMetadata,
   type SandboxProviderManifest,
   type SandboxStatus,
 } from '../schemas/sandboxProvider';
+
+export { isE2BAuthError };
 
 /** Daytona rejected the credentials (401 unauthorized); retrying the same key cannot succeed. */
 export function isDaytonaAuthError(error: unknown): boolean {
@@ -41,7 +48,7 @@ export function toDaytonaSandboxProvider({
   logger,
   build_metadata,
 }: {
-  manifest: SandboxProviderManifest;
+  manifest: DaytonaSandboxProviderManifest;
   tenant_id: string;
   logger: Logger;
   build_metadata?: SandboxBuildMetadata | null;
@@ -54,6 +61,36 @@ export function toDaytonaSandboxProvider({
     tenantName: tenant_id,
     sandboxImage: build_metadata?.['image_uri'] ?? SANDBOX_IMAGE_URI,
     buildRef: build_metadata?.['build_ref'],
+    fileMaxBytesForDownload: configuration.SANDBOX_FILE_MAX_BYTES_FOR_DOWNLOAD,
+    logger,
+  });
+}
+
+/**
+ * Builds the E2B runtime provider for a stored E2B manifest. No network I/O until a method is called.
+ *
+ * When `build_metadata` is present, pin image/template/build ids to what was actually built.
+ */
+export function toE2BSandboxProvider({
+  manifest,
+  tenant_id,
+  logger,
+  build_metadata,
+}: {
+  manifest: E2BSandboxProviderManifest;
+  tenant_id: string;
+  logger: Logger;
+  build_metadata?: SandboxBuildMetadata | null;
+}): E2BSandboxProvider {
+  const { apiKey, ...settings } = toE2BSandboxProviderInput(manifest);
+  return new E2BSandboxProvider({
+    apiKey,
+    ...settings,
+    tenantName: tenant_id,
+    sandboxImage: build_metadata?.['image_uri'] ?? SANDBOX_IMAGE_URI,
+    buildRef: build_metadata?.['build_ref'],
+    templateId: build_metadata?.['template_id'],
+    buildId: build_metadata?.['build_id'],
     fileMaxBytesForDownload: configuration.SANDBOX_FILE_MAX_BYTES_FOR_DOWNLOAD,
     logger,
   });
@@ -80,6 +117,13 @@ export function toSandboxProviderFromRecord({
         logger,
         build_metadata: record.build_metadata,
       });
+    case 'e2b':
+      return toE2BSandboxProvider({
+        manifest: record.manifest,
+        tenant_id,
+        logger,
+        build_metadata: record.build_metadata,
+      });
     case 'truefoundry':
       return new TFYSandboxProvider({
         serverUrl: record.manifest.server_url,
@@ -89,6 +133,10 @@ export function toSandboxProviderFromRecord({
         defaultExecTimeoutMs: record.manifest.exec_timeout_ms,
         logger,
       });
+    default: {
+      const _exhaustive: never = record.manifest;
+      throw new Error(`Unsupported sandbox provider type: ${JSON.stringify(_exhaustive)}`);
+    }
   }
 }
 
@@ -112,8 +160,14 @@ function sandboxStatusFromRecord(record: SandboxProviderRecord): SandboxStatus {
 // Daytona deactivates idle snapshots after 14 days; revalidate at 13 to stay a day ahead.
 const READY_REVALIDATE_INTERVAL_MS = 13 * 24 * 60 * 60 * 1000;
 
-/** Cap the Daytona round-trip for the refresh, which runs outside a transaction. */
+/** Cap the provider round-trip for the refresh, which runs outside a transaction. */
 const STATUS_REFRESH_TIMEOUT_MS = 60_000;
+
+function isSettingsSandboxProvider(
+  manifest: SandboxProviderRecord['manifest'],
+): manifest is SandboxProviderManifest {
+  return manifest.type === 'daytona' || manifest.type === 'e2b';
+}
 
 export async function checkSnapshotStatus({
   store,
@@ -131,8 +185,8 @@ export async function checkSnapshotStatus({
 
   const persisted = sandboxStatusFromRecord(record);
 
-  // Prebuilt image — no snapshot registration or refresh.
-  if (record.manifest.type === 'truefoundry') {
+  // Prebuilt image — no snapshot/template registration or refresh.
+  if (!isSettingsSandboxProvider(record.manifest)) {
     return persisted;
   }
 
@@ -142,15 +196,10 @@ export async function checkSnapshotStatus({
     return persisted;
   }
 
-  const provider = toDaytonaSandboxProvider({
-    manifest: record.manifest,
-    tenant_id,
-    logger,
-    build_metadata: record.build_metadata,
-  });
+  const provider = toSandboxProviderFromRecord({ record, tenant_id, logger });
   let build: SandboxBuild;
   if (record.status === 'ready') {
-    // this is because image may have deactivated
+    // Daytona may have deactivated an idle snapshot; E2B re-checks template readiness.
     build = await withTimeout(provider.buildImage(), STATUS_REFRESH_TIMEOUT_MS, 'sandbox buildImage');
   } else {
     build = await withTimeout(provider.getImageBuildStatus(), STATUS_REFRESH_TIMEOUT_MS, 'sandbox getImageBuildStatus');

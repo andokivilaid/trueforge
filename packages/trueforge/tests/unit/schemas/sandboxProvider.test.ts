@@ -2,12 +2,14 @@ import {
   StoredSandboxProviderManifestSchema,
   UpdateSandboxProviderRequestSchema,
   toDaytonaSandboxProviderInput,
-  type SandboxProviderManifest,
+  toE2BSandboxProviderInput,
+  type DaytonaSandboxProvider,
+  type E2BSandboxProvider,
 } from '../../../src/schemas/sandboxProvider';
 
 describe('toDaytonaSandboxProviderInput', () => {
   it('maps a Daytona wire/DB manifest to apiKey plus provider settings', () => {
-    const manifest: SandboxProviderManifest = {
+    const manifest: DaytonaSandboxProvider = {
       type: 'daytona',
       auth: { api_key: 'dtn-test' },
       exec_timeout_ms: 60_000,
@@ -22,6 +24,23 @@ describe('toDaytonaSandboxProviderInput', () => {
       autoStopIntervalInMinutes: 5,
       autoArchiveIntervalInMinutes: 60,
       autoDeleteIntervalInMinutes: 7200,
+    });
+  });
+});
+
+describe('toE2BSandboxProviderInput', () => {
+  it('maps an E2B wire/DB manifest to apiKey plus provider settings', () => {
+    const manifest: E2BSandboxProvider = {
+      type: 'e2b',
+      auth: { api_key: 'e2b-test' },
+      exec_timeout_ms: 60_000,
+      sandbox_timeout_ms: 300_000,
+    };
+
+    expect(toE2BSandboxProviderInput(manifest)).toEqual({
+      apiKey: 'e2b-test',
+      timeoutMs: 60_000,
+      sandboxTimeoutMs: 300_000,
     });
   });
 });
@@ -42,10 +61,26 @@ describe('StoredSandboxProviderManifestSchema', () => {
       exec_timeout_ms: 60_000,
     });
   });
+
+  it('parses an e2b manifest for store use', () => {
+    expect(
+      StoredSandboxProviderManifestSchema.parse({
+        type: 'e2b',
+        auth: { api_key: 'e2b-test' },
+        exec_timeout_ms: 60_000,
+        sandbox_timeout_ms: 300_000,
+      }),
+    ).toEqual({
+      type: 'e2b',
+      auth: { api_key: 'e2b-test' },
+      exec_timeout_ms: 60_000,
+      sandbox_timeout_ms: 300_000,
+    });
+  });
 });
 
 describe('UpdateSandboxProviderRequestSchema', () => {
-  it('rejects a truefoundry manifest (settings PUT is Daytona-only)', () => {
+  it('rejects a truefoundry manifest (settings PUT is Daytona/E2B only)', () => {
     expect(() =>
       UpdateSandboxProviderRequestSchema.parse({
         manifest: {
@@ -56,5 +91,20 @@ describe('UpdateSandboxProviderRequestSchema', () => {
         },
       }),
     ).toThrow();
+  });
+
+  it('accepts an e2b manifest', () => {
+    expect(
+      UpdateSandboxProviderRequestSchema.parse({
+        manifest: {
+          type: 'e2b',
+          auth: { api_key: 'e2b-test' },
+          exec_timeout_ms: 60_000,
+          sandbox_timeout_ms: 300_000,
+        },
+      }),
+    ).toMatchObject({
+      manifest: { type: 'e2b' },
+    });
   });
 });

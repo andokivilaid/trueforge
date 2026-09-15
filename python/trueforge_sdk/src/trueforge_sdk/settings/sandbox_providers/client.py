@@ -76,7 +76,7 @@ class SandboxProvidersClient:
         --------
         from trueforge_sdk import (
             DaytonaSandboxProviderAuth,
-            SandboxProviderManifest,
+            SandboxProviderManifestAutoArchiveIntervalInMinutes,
             TrueForge,
         )
 
@@ -85,7 +85,7 @@ class SandboxProvidersClient:
             base_url="https://yourhost.com/path/to/api",
         )
         client.settings.sandbox_providers.create_or_update(
-            manifest=SandboxProviderManifest(
+            manifest=SandboxProviderManifestAutoArchiveIntervalInMinutes(
                 auth=DaytonaSandboxProviderAuth(
                     api_key="api_key",
                 ),
@@ -175,7 +175,7 @@ class AsyncSandboxProvidersClient:
         from trueforge_sdk import (
             AsyncTrueForge,
             DaytonaSandboxProviderAuth,
-            SandboxProviderManifest,
+            SandboxProviderManifestAutoArchiveIntervalInMinutes,
         )
 
         client = AsyncTrueForge(
@@ -186,7 +186,7 @@ class AsyncSandboxProvidersClient:
 
         async def main() -> None:
             await client.settings.sandbox_providers.create_or_update(
-                manifest=SandboxProviderManifest(
+                manifest=SandboxProviderManifestAutoArchiveIntervalInMinutes(
                     auth=DaytonaSandboxProviderAuth(
                         api_key="api_key",
                     ),

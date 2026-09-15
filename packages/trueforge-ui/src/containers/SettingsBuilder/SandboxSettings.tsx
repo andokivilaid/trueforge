@@ -410,6 +410,7 @@ const SandboxSettings = () => {
             : 'Configure this sandbox provider. API key is never stored in the catalog.'
         }
         initialConfig={formInitialConfig}
+        providerType={createEntry?.type ?? updateProvider?.catalogId}
         requireApiKey={!isUpdate}
         busy={busy}
         error={formError}

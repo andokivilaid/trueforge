@@ -10,13 +10,15 @@ import {
   checkSnapshotStatus,
   isDaytonaAuthError,
   isDaytonaPermissionError,
+  isE2BAuthError,
   toDaytonaSandboxProvider,
+  toE2BSandboxProvider,
   toSandboxStatus,
 } from '../sandbox/providerUtils';
 import type { SandboxProviderManifest, UpdateSandboxProviderRequest } from '../schemas/sandboxProvider';
 import { MissingStoredSecretError, resolveStoredSecretValue, toRedactedSecretValue } from '../utils/secretRedaction';
 
-/** Cap the Daytona register round-trip so a slow/unreachable provider can't hold the request (or DB txn) open. */
+/** Cap the register round-trip so a slow/unreachable provider can't hold the request (or DB txn) open. */
 const BUILD_REQUEST_TIMEOUT_MS = 3_000;
 
 export interface SandboxProvidersRouterDeps<TTransaction> {
@@ -33,13 +35,60 @@ function redactSandboxProvider(manifest: SandboxProviderManifest): SandboxProvid
   };
 }
 
+function resolveApiKey({
+  incoming,
+  existing,
+}: {
+  incoming: string;
+  existing: SandboxProviderRecord | undefined;
+}): string {
+  const existingKey =
+    existing?.manifest.type === 'daytona' || existing?.manifest.type === 'e2b'
+      ? existing.manifest.auth.api_key
+      : undefined;
+  return resolveStoredSecretValue({ incoming, existing: existingKey });
+}
+
+function buildProviderForManifest({
+  manifest,
+  tenant_id,
+  logger,
+  build_metadata,
+}: {
+  manifest: SandboxProviderManifest;
+  tenant_id: string;
+  logger: Logger;
+  build_metadata?: SandboxProviderRecord['build_metadata'];
+}) {
+  switch (manifest.type) {
+    case 'daytona':
+      return toDaytonaSandboxProvider({
+        manifest,
+        tenant_id,
+        logger,
+        ...(build_metadata !== undefined ? { build_metadata } : {}),
+      });
+    case 'e2b':
+      return toE2BSandboxProvider({
+        manifest,
+        tenant_id,
+        logger,
+        ...(build_metadata !== undefined ? { build_metadata } : {}),
+      });
+    default: {
+      const _exhaustive: never = manifest;
+      throw new Error(`Unsupported sandbox provider type: ${JSON.stringify(_exhaustive)}`);
+    }
+  }
+}
+
 /** Admin/settings sandbox provider surface (mounted at /api/v1/settings/sandbox-providers). */
 export function createSandboxProvidersRouter<TTransaction>(deps: SandboxProvidersRouterDeps<TTransaction>) {
   const getHandler: RouteHandler<typeof getSandboxProviderRoute> = async c => {
     const requestContext = deps.resolveRequestContext(c);
     const store = deps.resolveSandboxProviderStore(c);
     const record = await store.getSandboxProvider(requestContext.tenant_id);
-    if (record?.manifest.type !== 'daytona') {
+    if (record?.manifest.type !== 'daytona' && record?.manifest.type !== 'e2b') {
       return c.json({ error: { message: 'No sandbox provider configured' } }, 404);
     }
     // Refresh the persisted build status (and re-activate an idle snapshot) on every GET.
@@ -68,24 +117,24 @@ export function createSandboxProvidersRouter<TTransaction>(deps: SandboxProvider
     const resolveManifest = (existing: SandboxProviderRecord | undefined): SandboxProviderManifest => ({
       ...incoming,
       auth: {
-        api_key: resolveStoredSecretValue({
-          incoming: incoming.auth.api_key,
-          existing: existing?.manifest.type === 'daytona' ? existing.manifest.auth.api_key : undefined,
-        }),
+        api_key: resolveApiKey({ incoming: incoming.auth.api_key, existing }),
       },
     });
     try {
-      // NOTE: build (Daytona network I/O) runs inside the transaction for now; the design is being revisited.
+      // NOTE: build (provider network I/O) runs inside the transaction for now; the design is being revisited.
       const { manifest, status } = await deps.withTransaction(async transaction => {
         const locked = await store.getSandboxProviderForUpdate(requestContext.tenant_id, transaction);
         const resolved = resolveManifest(locked);
-        // Pass persisted build_metadata so a settings re-save does not start a new snapshot for a
+        // Pass persisted build_metadata so a settings re-save does not start a new snapshot/template for a
         // bumped SANDBOX_IMAGE_URI (upgrades are unsupported — first configure has no metadata).
-        const provider = toDaytonaSandboxProvider({
+        // When switching provider type, drop old metadata so the new backend builds fresh.
+        const build_metadata =
+          locked !== undefined && locked.manifest.type === resolved.type ? locked.build_metadata : undefined;
+        const provider = buildProviderForManifest({
           manifest: resolved,
           tenant_id: requestContext.tenant_id,
           logger: deps.logger,
-          ...(locked ? { build_metadata: locked.build_metadata } : {}),
+          ...(build_metadata !== undefined ? { build_metadata } : {}),
         });
         const built = toSandboxStatus(
           await withTimeout(provider.buildImage(), BUILD_REQUEST_TIMEOUT_MS, 'sandbox buildImage'),
@@ -110,8 +159,9 @@ export function createSandboxProvidersRouter<TTransaction>(deps: SandboxProvider
       if (error instanceof MissingStoredSecretError) {
         return c.json({ error: { message: 'API key is required' } }, 400);
       }
-      if (isDaytonaAuthError(error)) {
-        return c.json({ error: { message: 'Daytona rejected the API key — check the credentials' } }, 422);
+      if (isDaytonaAuthError(error) || isE2BAuthError(error)) {
+        const label = isE2BAuthError(error) ? 'E2B' : 'Daytona';
+        return c.json({ error: { message: `${label} rejected the API key — check the credentials` } }, 422);
       }
       if (isDaytonaPermissionError(error)) {
         return c.json(

@@ -34,6 +34,10 @@ if typing.TYPE_CHECKING:
     from .catalog_model import CatalogModel
     from .catalog_model_provider import CatalogModelProvider
     from .catalog_sandbox_provider import CatalogSandboxProvider
+    from .catalog_sandbox_provider_auto_archive_interval_in_minutes import (
+        CatalogSandboxProviderAutoArchiveIntervalInMinutes,
+    )
+    from .catalog_sandbox_provider_sandbox_timeout_ms import CatalogSandboxProviderSandboxTimeoutMs
     from .catalog_skill import CatalogSkill
     from .catalog_skill_type import CatalogSkillType
     from .catalog_well_known_model_provider import CatalogWellKnownModelProvider
@@ -60,6 +64,7 @@ if typing.TYPE_CHECKING:
     from .delete_agent_response import DeleteAgentResponse
     from .delete_schedule_response import DeleteScheduleResponse
     from .dynamic_sub_agents_config import DynamicSubAgentsConfig
+    from .e2b_sandbox_provider_auth import E2BSandboxProviderAuth
     from .extended_chunk_delta_tool_call import ExtendedChunkDeltaToolCall
     from .file_content import FileContent
     from .finish_reason import FinishReason
@@ -162,6 +167,10 @@ if typing.TYPE_CHECKING:
     from .sandbox_config import SandboxConfig
     from .sandbox_created_event import SandboxCreatedEvent
     from .sandbox_provider_manifest import SandboxProviderManifest
+    from .sandbox_provider_manifest_auto_archive_interval_in_minutes import (
+        SandboxProviderManifestAutoArchiveIntervalInMinutes,
+    )
+    from .sandbox_provider_manifest_sandbox_timeout_ms import SandboxProviderManifestSandboxTimeoutMs
     from .schedule import Schedule
     from .schedule_manifest import ScheduleManifest
     from .schedule_run import ScheduleRun
@@ -264,6 +273,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "CatalogModel": ".catalog_model",
     "CatalogModelProvider": ".catalog_model_provider",
     "CatalogSandboxProvider": ".catalog_sandbox_provider",
+    "CatalogSandboxProviderAutoArchiveIntervalInMinutes": ".catalog_sandbox_provider_auto_archive_interval_in_minutes",
+    "CatalogSandboxProviderSandboxTimeoutMs": ".catalog_sandbox_provider_sandbox_timeout_ms",
     "CatalogSkill": ".catalog_skill",
     "CatalogSkillType": ".catalog_skill_type",
     "CatalogWellKnownModelProvider": ".catalog_well_known_model_provider",
@@ -290,6 +301,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "DeleteAgentResponse": ".delete_agent_response",
     "DeleteScheduleResponse": ".delete_schedule_response",
     "DynamicSubAgentsConfig": ".dynamic_sub_agents_config",
+    "E2BSandboxProviderAuth": ".e2b_sandbox_provider_auth",
     "ExtendedChunkDeltaToolCall": ".extended_chunk_delta_tool_call",
     "FileContent": ".file_content",
     "FinishReason": ".finish_reason",
@@ -392,6 +404,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "SandboxConfig": ".sandbox_config",
     "SandboxCreatedEvent": ".sandbox_created_event",
     "SandboxProviderManifest": ".sandbox_provider_manifest",
+    "SandboxProviderManifestAutoArchiveIntervalInMinutes": ".sandbox_provider_manifest_auto_archive_interval_in_minutes",
+    "SandboxProviderManifestSandboxTimeoutMs": ".sandbox_provider_manifest_sandbox_timeout_ms",
     "Schedule": ".schedule",
     "ScheduleManifest": ".schedule_manifest",
     "ScheduleRun": ".schedule_run",
@@ -518,6 +532,8 @@ __all__ = [
     "CatalogModel",
     "CatalogModelProvider",
     "CatalogSandboxProvider",
+    "CatalogSandboxProviderAutoArchiveIntervalInMinutes",
+    "CatalogSandboxProviderSandboxTimeoutMs",
     "CatalogSkill",
     "CatalogSkillType",
     "CatalogWellKnownModelProvider",
@@ -544,6 +560,7 @@ __all__ = [
     "DeleteAgentResponse",
     "DeleteScheduleResponse",
     "DynamicSubAgentsConfig",
+    "E2BSandboxProviderAuth",
     "ExtendedChunkDeltaToolCall",
     "FileContent",
     "FinishReason",
@@ -646,6 +663,8 @@ __all__ = [
     "SandboxConfig",
     "SandboxCreatedEvent",
     "SandboxProviderManifest",
+    "SandboxProviderManifestAutoArchiveIntervalInMinutes",
+    "SandboxProviderManifestSandboxTimeoutMs",
     "Schedule",
     "ScheduleManifest",
     "ScheduleRun",
