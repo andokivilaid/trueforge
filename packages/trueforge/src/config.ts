@@ -124,6 +124,40 @@ export function parseOidcAllowedEmails(raw: string | undefined): string[] {
   return parseCommaSeparatedEnvList(raw);
 }
 
+/**
+ * Parses `TRUEFOUNDRY_TENANT_ID_TO_ALLOWED_MODEL_PROVIDER_ACCOUNTS` JSON.
+ * Empty / unset → `{}` (no filtering).
+ */
+export function parseTenantIdToAllowedModelProviderAccounts(raw: string | undefined): Record<string, string[]> {
+  if (raw === undefined || raw.trim() === '') {
+    return {};
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (error) {
+    throw new Error(
+      'Environment variable TRUEFOUNDRY_TENANT_ID_TO_ALLOWED_MODEL_PROVIDER_ACCOUNTS must be valid JSON',
+      { cause: error },
+    );
+  }
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error(
+      'Environment variable TRUEFOUNDRY_TENANT_ID_TO_ALLOWED_MODEL_PROVIDER_ACCOUNTS must be a JSON object of tenant_id → string[]',
+    );
+  }
+  const result: Record<string, string[]> = {};
+  for (const [tenantId, accounts] of Object.entries(parsed)) {
+    if (!Array.isArray(accounts) || accounts.some(account => typeof account !== 'string')) {
+      throw new Error(
+        `Environment variable TRUEFOUNDRY_TENANT_ID_TO_ALLOWED_MODEL_PROVIDER_ACCOUNTS[${JSON.stringify(tenantId)}] must be a string array`,
+      );
+    }
+    result[tenantId] = accounts;
+  }
+  return result;
+}
+
 /** Parses a positive-integer env var, falling back to `defaultValue` when unset/blank. */
 function parsePositiveInt(options: { envKey: string; raw: string | undefined; defaultValue: number }): number {
   const { envKey, raw, defaultValue } = options;
@@ -662,16 +696,12 @@ export type DistributedServerConfiguration = SharedServerConfiguration & {
    */
   TRUEFOUNDRY_SANDBOX_SETTINGS: string | undefined;
   /**
-   * Optional allowlist of model FQNs (`provider/model`) for the tenant named by
-   * `TRUEFOUNDRY_MODEL_FILTER_TENANT_ID`. Empty / unset → no filtering. Other tenants are unaffected.
-   * Env: `TRUEFOUNDRY_MODEL_FILTER`.
+   * Optional per-tenant allowlist of model provider account names. JSON object
+   * `Record<tenant_id, account_name[]>`. Empty / unset → no filtering. Tenants omitted from the
+   * map are unaffected; tenants present are limited to the listed provider accounts.
+   * Env: `TRUEFOUNDRY_TENANT_ID_TO_ALLOWED_MODEL_PROVIDER_ACCOUNTS`.
    */
-  TRUEFOUNDRY_MODEL_FILTER: string[];
-  /**
-   * Tenant id that receives `TRUEFOUNDRY_MODEL_FILTER` when that allowlist is non-empty.
-   * Env: `TRUEFOUNDRY_MODEL_FILTER_TENANT_ID`. Default `internal`.
-   */
-  TRUEFOUNDRY_MODEL_FILTER_TENANT_ID: string;
+  TRUEFOUNDRY_TENANT_ID_TO_ALLOWED_MODEL_PROVIDER_ACCOUNTS: Record<string, string[]>;
 };
 
 export type ServerConfiguration = StandaloneServerConfiguration | DistributedServerConfiguration;
@@ -847,9 +877,9 @@ const configuration: ServerConfiguration = standalone
       TRUEFOUNDRY_SANDBOX_API_KEY: getEnv('TRUEFOUNDRY_SANDBOX_API_KEY', { required: false }),
       TRUEFOUNDRY_SANDBOX_SERVER_URL: getEnv('TRUEFOUNDRY_SANDBOX_SERVER_URL', { required: false }),
       TRUEFOUNDRY_SANDBOX_SETTINGS: getEnv('TRUEFOUNDRY_SANDBOX_SETTINGS', { required: false }),
-      TRUEFOUNDRY_MODEL_FILTER: parseCommaSeparatedEnvList(getEnv('TRUEFOUNDRY_MODEL_FILTER', { required: false })),
-      TRUEFOUNDRY_MODEL_FILTER_TENANT_ID:
-        getEnv('TRUEFOUNDRY_MODEL_FILTER_TENANT_ID', { defaultValue: 'internal' }) ?? 'internal',
+      TRUEFOUNDRY_TENANT_ID_TO_ALLOWED_MODEL_PROVIDER_ACCOUNTS: parseTenantIdToAllowedModelProviderAccounts(
+        getEnv('TRUEFOUNDRY_TENANT_ID_TO_ALLOWED_MODEL_PROVIDER_ACCOUNTS', { required: false }),
+      ),
     };
 
 export function isOidcConfigured(

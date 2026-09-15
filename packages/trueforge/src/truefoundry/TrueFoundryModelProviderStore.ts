@@ -1,6 +1,5 @@
 import type { Logger } from 'winston';
 import type { RequestContext } from '../auth/identity';
-import configuration from '../config';
 import type { AgentRecord } from '../db/agentStore';
 import {
   flattenProviderModels,
@@ -15,7 +14,7 @@ import {
 import type { AvailableModel, ModelProviderManifest } from '../schemas/modelProvider';
 import { accessTokenForRequest, asTrueFoundryRequestContext, type ResolveAccessToken } from './accessToken';
 import { trueFoundryManaged } from './errors';
-import { mapEnabledModels, resolveDefaultGatewayUrl, type TrueFoundryEnabledModel } from './mapEnabledModels';
+import { filterEnvModels, mapEnabledModels, resolveDefaultGatewayUrl, type TrueFoundryEnabledModel } from './mapEnabledModels';
 import { TrueFoundryServiceFoundryServerClient } from './TrueFoundryServiceFoundryServerClient';
 
 export class TrueFoundryModelProviderStore<TTransaction = never> implements IModelProviderStore<TTransaction> {
@@ -95,15 +94,10 @@ export class TrueFoundryModelProviderStore<TTransaction = never> implements IMod
       this.#client.listGatewayInstallations(agentToken),
     ]);
     const gatewayUrl = resolveDefaultGatewayUrl(installations);
-    let models = mapEnabledModels({ integrations });
-    if (
-      !configuration.STANDALONE &&
-      input.tenant_id === configuration.TRUEFOUNDRY_MODEL_FILTER_TENANT_ID &&
-      configuration.TRUEFOUNDRY_MODEL_FILTER.length > 0
-    ) {
-      const allowed = new Set(configuration.TRUEFOUNDRY_MODEL_FILTER);
-      models = models.filter(model => allowed.has(`${model.accountName}/${model.modelName}`));
-    }
+    const models = filterEnvModels({
+      tenant_id: input.tenant_id,
+      models: mapEnabledModels({ integrations }),
+    });
     return toRecords({
       tenant_id: input.tenant_id,
       gatewayUrl,
