@@ -51,6 +51,10 @@ export class McpServerWithAuthStore<TTransaction = never> implements IMcpServerW
     return this.#store.upsertServer(input, transaction);
   }
 
+  deleteServer(input: GetMcpServerInput, transaction?: TTransaction): Promise<void> {
+    return this.#store.deleteServer(input, transaction);
+  }
+
   resolveInvokeHeaders(input: { record: McpServerRecord; userRef: string }): RemoteMcpHeaders {
     const { record, userRef } = input;
     if (record.manifest.auth?.type === 'dcr') {
