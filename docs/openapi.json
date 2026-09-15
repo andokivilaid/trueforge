@@ -1223,7 +1223,19 @@
         "properties": {},
         "type": "object"
       },
+      "DeleteMCPServerResponse": {
+        "properties": {},
+        "type": "object"
+      },
+      "DeleteModelProviderResponse": {
+        "properties": {},
+        "type": "object"
+      },
       "DeleteScheduleResponse": {
+        "properties": {},
+        "type": "object"
+      },
+      "DeleteSkillResponse": {
         "properties": {},
         "type": "object"
       },
@@ -9321,6 +9333,63 @@
       }
     },
     "/api/v1/settings/mcp-servers/{name}": {
+      "delete": {
+        "description": "Permanently removes the configured MCP server by name, including any stored OAuth tokens and pending authorizations. Idempotent if already gone.",
+        "parameters": [
+          {
+            "description": "MCP server name.",
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "description": "MCP server name.",
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteMCPServerResponse"
+                }
+              }
+            },
+            "description": "MCP server deleted."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "OIDC is configured and the request has no valid session cookie."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "OIDC is configured and the caller is authenticated but not an admin."
+          }
+        },
+        "summary": "Delete an MCP server",
+        "tags": [
+          "MCP Servers"
+        ],
+        "x-fern-sdk-group-name": [
+          "settings",
+          "mcpServers"
+        ],
+        "x-fern-sdk-method-name": "delete"
+      },
       "get": {
         "description": "A single MCP server by name, with nested live auth_status (settings / admin projection). Header auth values are redacted.",
         "parameters": [
@@ -9531,6 +9600,75 @@
           "modelProviders"
         ],
         "x-fern-sdk-method-name": "create_or_update"
+      }
+    },
+    "/api/v1/settings/model-providers/{name}": {
+      "delete": {
+        "description": "Permanently removes the configured model provider by name. Idempotent if already gone.",
+        "parameters": [
+          {
+            "description": "Model provider name.",
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "description": "Model provider name.",
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteModelProviderResponse"
+                }
+              }
+            },
+            "description": "Model provider deleted."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "OIDC is configured and the request has no valid session cookie."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "OIDC is configured and the caller is authenticated but not an admin."
+          },
+          "424": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "Unsupported operation because the model providers are managed by external system"
+          }
+        },
+        "summary": "Delete a model provider",
+        "tags": [
+          "Models"
+        ],
+        "x-fern-sdk-group-name": [
+          "settings",
+          "modelProviders"
+        ],
+        "x-fern-sdk-method-name": "delete"
       }
     },
     "/api/v1/settings/sandbox-providers": {
@@ -9785,6 +9923,75 @@
           "skills"
         ],
         "x-fern-sdk-method-name": "create_or_update"
+      }
+    },
+    "/api/v1/settings/skills/{name}": {
+      "delete": {
+        "description": "Permanently removes the configured skill by name. Idempotent if already gone.",
+        "parameters": [
+          {
+            "description": "Skill name.",
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "description": "Skill name.",
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteSkillResponse"
+                }
+              }
+            },
+            "description": "Skill deleted."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "OIDC is configured and the request has no valid session cookie."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "OIDC is configured and the caller is authenticated but not an admin."
+          },
+          "424": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "Unsupported because skills are managed by an external system."
+          }
+        },
+        "summary": "Delete a skill",
+        "tags": [
+          "Skills"
+        ],
+        "x-fern-sdk-group-name": [
+          "settings",
+          "skills"
+        ],
+        "x-fern-sdk-method-name": "delete"
       }
     },
     "/api/v1/skills": {

@@ -5,6 +5,7 @@ import { SkillNameConflictError, type ISkillStore, type SkillRecord } from '../d
 import type { WithTransaction } from '../db/transaction';
 import {
   createSkillRoute,
+  deleteSkillRoute,
   listAvailableSkillsRoute,
   listConfiguredSkillsRoute,
   listSkillVersionsRoute,
@@ -87,10 +88,18 @@ export function createSkillsRouter<TTransaction>(deps: SkillsRouterDeps<TTransac
     return c.json({ data: toConfiguredSkill(record) }, 200);
   };
 
+  const deleteHandler: RouteHandler<typeof deleteSkillRoute> = async c => {
+    const { name } = c.req.valid('param');
+    const requestContext = deps.resolveRequestContext(c);
+    await deps.resolveSkillStore(c).deleteSkill({ tenant_id: requestContext.tenant_id, name });
+    return c.json({}, 200);
+  };
+
   const router = new OpenAPIHono();
   router.openapi(listConfiguredSkillsRoute, listConfiguredHandler);
   router.openapi(createSkillRoute, createHandler);
   router.openapi(putSkillRoute, putHandler);
+  router.openapi(deleteSkillRoute, deleteHandler);
   return router;
 }
 

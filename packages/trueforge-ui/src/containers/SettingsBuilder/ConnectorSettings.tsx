@@ -220,6 +220,15 @@ const ConnectorSettings = () => {
     }).catch(() => {});
   };
 
+  const handleRemoveConnector = (connector: ConnectorBase) => {
+    const deleteConnector = connectorCatalog.deleteConnector;
+    if (!deleteConnector) return;
+    void runMutation(async () => {
+      await deleteConnector({ id: connector.id });
+      setSelectedConnector(null);
+    }).catch(() => {});
+  };
+
   const handleConnectorRefreshed = (refreshedConnector: ConnectorBase) => {
     setSelectedConnector(current => (current?.id === refreshedConnector.id ? refreshedConnector : current));
     setConnectors(current => {
@@ -305,6 +314,21 @@ const ConnectorSettings = () => {
               <Icon name="pencil" className="size-3" />
               Edit
             </Button.Secondary>
+            {connectorCatalog.deleteConnector ? (
+              <Button.Secondary
+                size="small"
+                type="button"
+                className="transition-colors hover:bg-failure-bg/10 hover:text-failure-bg"
+                disabled={busy}
+                aria-label={`Remove ${connector.name}`}
+                onClick={event => {
+                  event.stopPropagation();
+                  handleRemoveConnector(connector);
+                }}
+              >
+                Remove
+              </Button.Secondary>
+            ) : null}
             <Icon name="chevron-right" className="size-4" />
           </div>
         </article>

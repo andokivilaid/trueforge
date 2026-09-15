@@ -82,6 +82,12 @@ export class TrueFoundryModelProviderStore<TTransaction = never> implements IMod
     return trueFoundryManaged();
   }
 
+  deleteProvider(input: GetModelProviderForUpdateInput, transaction?: TTransaction): Promise<void> {
+    void input;
+    void transaction;
+    return trueFoundryManaged();
+  }
+
   async listModels(input: ListModelProvidersInput, transaction?: TTransaction): Promise<AvailableModel[]> {
     return flattenProviderModels(await this.listProviders(input, transaction));
   }

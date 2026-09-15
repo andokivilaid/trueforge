@@ -9,6 +9,7 @@ import {
 import type { WithTransaction } from '../db/transaction';
 import {
   createModelProviderRoute,
+  deleteModelProviderRoute,
   listModelProvidersRoute,
   putModelProviderRoute,
 } from '../routes/modelProviderRoutes';
@@ -124,9 +125,18 @@ export function createModelProvidersRouter<TTransaction>(deps: ModelProvidersRou
     }
   };
 
+  const deleteHandler: RouteHandler<typeof deleteModelProviderRoute> = async c => {
+    const { name } = c.req.valid('param');
+    const store = deps.resolveModelProviderStore(c);
+    const requestContext = deps.resolveRequestContext(c);
+    await store.deleteProvider({ tenant_id: requestContext.tenant_id, name });
+    return c.json({}, 200);
+  };
+
   const router = new OpenAPIHono();
   router.openapi(listModelProvidersRoute, listHandler);
   router.openapi(createModelProviderRoute, createHandler);
   router.openapi(putModelProviderRoute, putHandler);
+  router.openapi(deleteModelProviderRoute, deleteHandler);
   return router;
 }
