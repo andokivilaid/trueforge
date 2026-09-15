@@ -2,8 +2,8 @@ name: Build dev image
 
 # From-source image for floating-main / external deploy repos.
 # Builds Dockerfile.dev and pushes .../trueforge:<fullSha>. No chart publish.
-on:
-  workflow_dispatch:
+# FORK-DISABLED: must never push images to TrueFoundry artifactory from this fork.
+on: {}
 
 concurrency:
   group: build-dev-image
