@@ -9,6 +9,7 @@ import {
   CreateModelProviderRequestSchema,
   DeleteModelProviderResponseSchema,
   GetModelProviderResponseSchema,
+  ListDiscoveredModelsResponseSchema,
   ListModelProvidersResponseSchema,
   UpdateModelProviderRequestSchema,
 } from '../schemas/modelProvider';
@@ -137,6 +138,40 @@ export const deleteModelProviderRoute = createRoute({
     424: {
       content: { 'application/json': { schema: RequestErrorResponseSchema } },
       description: 'Unsupported operation because the model providers are managed by external system',
+    },
+  },
+});
+
+export const listDiscoveredModelsRoute = createRoute({
+  method: 'get',
+  path: '/{name}/discovered-models',
+  tags: [OpenApiTag.MODELS],
+  summary: 'List the models a configured provider reports',
+  description:
+    'Asks the provider itself which models it serves, using the stored API key. Returns token limits ' +
+    'when the provider reports them (Gemini does; the OpenAI-compatible list does not). The shipped ' +
+    'catalog is a preset list and may lag the provider, so this is the current source of truth.',
+  'x-fern-sdk-group-name': ['settings', 'modelProviders'],
+  'x-fern-sdk-method-name': 'discovered_models',
+  request: {
+    params: ModelProviderNameParamsSchema,
+  },
+  responses: {
+    200: {
+      content: { 'application/json': { schema: ListDiscoveredModelsResponseSchema } },
+      description: 'Models the provider reports',
+    },
+    404: {
+      content: { 'application/json': { schema: RequestErrorResponseSchema } },
+      description: 'No provider is configured under this name.',
+    },
+    501: {
+      content: { 'application/json': { schema: RequestErrorResponseSchema } },
+      description: 'This provider type has no discovery adapter.',
+    },
+    502: {
+      content: { 'application/json': { schema: RequestErrorResponseSchema } },
+      description: 'The provider was unreachable or rejected the request.',
     },
   },
 });

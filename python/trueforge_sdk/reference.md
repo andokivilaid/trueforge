@@ -4463,6 +4463,78 @@ client.settings.model_providers.delete(
 </dl>
 </details>
 
+<details><summary><code>client.settings.model_providers.<a href="src/trueforge_sdk/settings/model_providers/client.py">discovered_models</a>(...) -> ListDiscoveredModelsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Asks the provider itself which models it serves, using the stored API key. Returns token limits when the provider reports them (Gemini does; the OpenAI-compatible list does not). The shipped catalog is a preset list and may lag the provider, so this is the current source of truth.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from trueforge_sdk import TrueForge
+
+client = TrueForge(
+    token="<token>",
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.settings.model_providers.discovered_models(
+    name="name",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**name:** `str` — Model provider name.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Settings SandboxProviders
 <details><summary><code>client.settings.sandbox_providers.<a href="src/trueforge_sdk/settings/sandbox_providers/client.py">get</a>() -> GetSandboxProviderResponse</code></summary>
 <dl>

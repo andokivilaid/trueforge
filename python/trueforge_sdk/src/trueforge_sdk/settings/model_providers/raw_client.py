@@ -11,13 +11,17 @@ from ...core.parse_error import ParsingError
 from ...core.request_options import RequestOptions
 from ...core.serialization import convert_and_respect_annotation_metadata
 from ...core.unchecked_base_model import construct_type
+from ...errors.bad_gateway_error import BadGatewayError
 from ...errors.bad_request_error import BadRequestError
 from ...errors.conflict_error import ConflictError
 from ...errors.failed_dependency_error import FailedDependencyError
 from ...errors.forbidden_error import ForbiddenError
+from ...errors.not_found_error import NotFoundError
+from ...errors.not_implemented_error import NotImplementedError
 from ...errors.unauthorized_error import UnauthorizedError
 from ...types.delete_model_provider_response import DeleteModelProviderResponse
 from ...types.get_model_provider_response import GetModelProviderResponse
+from ...types.list_discovered_models_response import ListDiscoveredModelsResponse
 from ...types.list_model_providers_response import ListModelProvidersResponse
 from ...types.model_provider_manifest import ModelProviderManifest
 from ...types.request_error_response import RequestErrorResponse
@@ -326,6 +330,82 @@ class RawModelProvidersClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
+    def discovered_models(
+        self, *, name: str, request_options: typing.Optional[RequestOptions] = None
+    ) -> HttpResponse[ListDiscoveredModelsResponse]:
+        """
+        Asks the provider itself which models it serves, using the stored API key. Returns token limits when the provider reports them (Gemini does; the OpenAI-compatible list does not). The shipped catalog is a preset list and may lag the provider, so this is the current source of truth.
+
+        Parameters
+        ----------
+        name : str
+            Model provider name.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[ListDiscoveredModelsResponse]
+            Models the provider reports
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"api/v1/settings/model-providers/{encode_path_param(name)}/discovered-models",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    ListDiscoveredModelsResponse,
+                    construct_type(
+                        type_=ListDiscoveredModelsResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        RequestErrorResponse,
+                        construct_type(
+                            type_=RequestErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 501:
+                raise NotImplementedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        RequestErrorResponse,
+                        construct_type(
+                            type_=RequestErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 502:
+                raise BadGatewayError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        RequestErrorResponse,
+                        construct_type(
+                            type_=RequestErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
 
 class AsyncRawModelProvidersClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
@@ -608,6 +688,82 @@ class AsyncRawModelProvidersClient:
                 )
             if _response.status_code == 424:
                 raise FailedDependencyError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        RequestErrorResponse,
+                        construct_type(
+                            type_=RequestErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def discovered_models(
+        self, *, name: str, request_options: typing.Optional[RequestOptions] = None
+    ) -> AsyncHttpResponse[ListDiscoveredModelsResponse]:
+        """
+        Asks the provider itself which models it serves, using the stored API key. Returns token limits when the provider reports them (Gemini does; the OpenAI-compatible list does not). The shipped catalog is a preset list and may lag the provider, so this is the current source of truth.
+
+        Parameters
+        ----------
+        name : str
+            Model provider name.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[ListDiscoveredModelsResponse]
+            Models the provider reports
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"api/v1/settings/model-providers/{encode_path_param(name)}/discovered-models",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    ListDiscoveredModelsResponse,
+                    construct_type(
+                        type_=ListDiscoveredModelsResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        RequestErrorResponse,
+                        construct_type(
+                            type_=RequestErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 501:
+                raise NotImplementedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        RequestErrorResponse,
+                        construct_type(
+                            type_=RequestErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 502:
+                raise BadGatewayError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         RequestErrorResponse,

@@ -62,6 +62,7 @@ if typing.TYPE_CHECKING:
     from .delete_model_provider_response import DeleteModelProviderResponse
     from .delete_schedule_response import DeleteScheduleResponse
     from .delete_skill_response import DeleteSkillResponse
+    from .discovered_model import DiscoveredModel
     from .dynamic_sub_agents_config import DynamicSubAgentsConfig
     from .extended_chunk_delta_tool_call import ExtendedChunkDeltaToolCall
     from .file_content import FileContent
@@ -97,6 +98,7 @@ if typing.TYPE_CHECKING:
     from .list_available_mcp_servers_response import ListAvailableMcpServersResponse
     from .list_available_models_response import ListAvailableModelsResponse
     from .list_available_skills_response import ListAvailableSkillsResponse
+    from .list_discovered_models_response import ListDiscoveredModelsResponse
     from .list_mcp_server_tools_response import ListMcpServerToolsResponse
     from .list_mcp_servers_response import ListMcpServersResponse
     from .list_model_providers_response import ListModelProvidersResponse
@@ -296,6 +298,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "DeleteModelProviderResponse": ".delete_model_provider_response",
     "DeleteScheduleResponse": ".delete_schedule_response",
     "DeleteSkillResponse": ".delete_skill_response",
+    "DiscoveredModel": ".discovered_model",
     "DynamicSubAgentsConfig": ".dynamic_sub_agents_config",
     "ExtendedChunkDeltaToolCall": ".extended_chunk_delta_tool_call",
     "FileContent": ".file_content",
@@ -331,6 +334,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ListAvailableMcpServersResponse": ".list_available_mcp_servers_response",
     "ListAvailableModelsResponse": ".list_available_models_response",
     "ListAvailableSkillsResponse": ".list_available_skills_response",
+    "ListDiscoveredModelsResponse": ".list_discovered_models_response",
     "ListMcpServerToolsResponse": ".list_mcp_server_tools_response",
     "ListMcpServersResponse": ".list_mcp_servers_response",
     "ListModelProvidersResponse": ".list_model_providers_response",
@@ -554,6 +558,7 @@ __all__ = [
     "DeleteModelProviderResponse",
     "DeleteScheduleResponse",
     "DeleteSkillResponse",
+    "DiscoveredModel",
     "DynamicSubAgentsConfig",
     "ExtendedChunkDeltaToolCall",
     "FileContent",
@@ -589,6 +594,7 @@ __all__ = [
     "ListAvailableMcpServersResponse",
     "ListAvailableModelsResponse",
     "ListAvailableSkillsResponse",
+    "ListDiscoveredModelsResponse",
     "ListMcpServerToolsResponse",
     "ListMcpServersResponse",
     "ListModelProvidersResponse",

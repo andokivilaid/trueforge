@@ -8,8 +8,14 @@ import {
 } from '../db/modelProviderStore';
 import type { WithTransaction } from '../db/transaction';
 import {
+  ModelDiscoveryError,
+  ModelDiscoveryUnsupportedError,
+  discoverProviderModels,
+} from '../modelDiscovery/discoverProviderModels';
+import {
   createModelProviderRoute,
   deleteModelProviderRoute,
+  listDiscoveredModelsRoute,
   listModelProvidersRoute,
   putModelProviderRoute,
 } from '../routes/modelProviderRoutes';
@@ -133,10 +139,33 @@ export function createModelProvidersRouter<TTransaction>(deps: ModelProvidersRou
     return c.json({}, 200);
   };
 
+  const listDiscoveredModelsHandler: RouteHandler<typeof listDiscoveredModelsRoute> = async c => {
+    const { name } = c.req.valid('param');
+    const requestContext = deps.resolveRequestContext(c);
+    const records = await deps.resolveModelProviderStore(c).listProviders({ tenant_id: requestContext.tenant_id });
+    const record = records.find(candidate => candidate.name === name);
+    if (record === undefined) {
+      return c.json({ error: { message: `No model provider configured under "${name}"` } }, 404);
+    }
+    try {
+      const { models } = await discoverProviderModels(record.manifest);
+      return c.json({ data: models }, 200);
+    } catch (error) {
+      if (error instanceof ModelDiscoveryUnsupportedError) {
+        return c.json({ error: { message: error.message } }, 501);
+      }
+      if (error instanceof ModelDiscoveryError) {
+        return c.json({ error: { message: error.message } }, 502);
+      }
+      throw error;
+    }
+  };
+
   const router = new OpenAPIHono();
   router.openapi(listModelProvidersRoute, listHandler);
   router.openapi(createModelProviderRoute, createHandler);
   router.openapi(putModelProviderRoute, putHandler);
   router.openapi(deleteModelProviderRoute, deleteHandler);
+  router.openapi(listDiscoveredModelsRoute, listDiscoveredModelsHandler);
   return router;
 }
