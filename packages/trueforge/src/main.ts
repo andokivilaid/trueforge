@@ -384,14 +384,15 @@ async function createDistributedPersistence(options: {
     { PostgresScheduleStore },
   ] = postgresStores;
 
+  logger.info('Connecting to Postgres');
   const db = createDb({
     connectionString: databaseUrl,
     poolMax: databasePoolMax,
     statementTimeoutMs,
     idleInTransactionSessionTimeoutMs,
   });
+  logger.info('Connected to Postgres');
   await migrateToLatest(db);
-  logger.info('Distributed mode: postgres');
   logger.info(`Executor id: ${executorId}`);
   const serviceFoundryClient = createServiceFoundryServerClient(logger);
   const tokenStore = new PostgresOAuthTokenStore(db);
