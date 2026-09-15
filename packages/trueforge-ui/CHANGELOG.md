@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0-rc.9
+
+### Patch Changes
+
+- 079f832: Show an optional tooltip when sandbox artifact downloads are read-only.
+- Updated dependencies [648273b]
+- Updated dependencies [134dcb9]
+  - @truefoundry/trueforge-sdk@0.2.0-rc.8
+
 ## 0.3.0-rc.8
 
 ### Patch Changes
