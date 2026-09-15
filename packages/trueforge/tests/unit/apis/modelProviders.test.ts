@@ -111,7 +111,9 @@ async function createRouters(): Promise<{
       resolveRequestContext: () => STANDALONE_REQUEST_CONTEXT,
     }),
     catalogRouter: createCatalogRouter({
-      modelCatalog: ModelCatalog.load(),
+      modelCatalog: ModelCatalog.load({
+        listOpenRouterModels: async () => [],
+      }),
       mcpCatalog: McpCatalog.load(),
       skillCatalog: SkillCatalog.load(),
       sandboxCatalog: SandboxCatalog.load(),

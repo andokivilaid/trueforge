@@ -18,6 +18,7 @@ import type { IMcpServerStore, IMcpServerWithAuthStore } from '../db/mcpServerSt
 import type { IModelProviderStore } from '../db/modelProviderStore';
 import type { ISandboxProviderStore } from '../db/sandboxProviderStore';
 import type { ISkillStore } from '../db/skillStore';
+import { OPENROUTER_REQUEST_HEADERS } from '../openRouter';
 import { LocalSandboxProvider } from '../sandbox/local/provider/LocalSandboxProvider';
 import { getCachedLocalSandboxSupport, isLocalSandboxFallbackEnabled } from '../sandbox/localRuntime';
 import { toSandboxProviderFromRecord } from '../sandbox/providerUtils';
@@ -144,7 +145,7 @@ export async function getModelDetails({
       name,
       baseUrl,
       apiKey: provider.manifest.auth?.api_key ?? '',
-      headers: {},
+      headers: type === 'openrouter' ? OPENROUTER_REQUEST_HEADERS : {},
     },
     defaultModelParams: model.properties.max_output_tokens ? { max_tokens: model.properties.max_output_tokens } : {},
     modelProperties: { contextLength: model.properties.context_length },

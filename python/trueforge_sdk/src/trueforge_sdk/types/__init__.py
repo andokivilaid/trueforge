@@ -145,6 +145,7 @@ if typing.TYPE_CHECKING:
     from .model_provider_manifest import ModelProviderManifest
     from .moonshot_model_provider import MoonshotModelProvider
     from .open_ai_model_provider import OpenAiModelProvider
+    from .open_router_model_provider import OpenRouterModelProvider
     from .permission_resource_type import PermissionResourceType
     from .previous_turn_id_input import PreviousTurnIdInput
     from .raw_tool_call import RawToolCall
@@ -378,6 +379,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ModelProviderManifest": ".model_provider_manifest",
     "MoonshotModelProvider": ".moonshot_model_provider",
     "OpenAiModelProvider": ".open_ai_model_provider",
+    "OpenRouterModelProvider": ".open_router_model_provider",
     "PermissionResourceType": ".permission_resource_type",
     "PreviousTurnIdInput": ".previous_turn_id_input",
     "RawToolCall": ".raw_tool_call",
@@ -635,6 +637,7 @@ __all__ = [
     "ModelProviderManifest",
     "MoonshotModelProvider",
     "OpenAiModelProvider",
+    "OpenRouterModelProvider",
     "PermissionResourceType",
     "PreviousTurnIdInput",
     "RawToolCall",
