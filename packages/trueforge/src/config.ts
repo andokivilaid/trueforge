@@ -104,10 +104,9 @@ export function parseOidcScopes(raw: string): string[] {
 }
 
 /**
- * Parses `OIDC_ALLOWED_EMAILS`: comma-separated exact addresses and/or globs
- * (`*@company.com`). Empty / unset → no allowlist (any authenticated user may sign in).
+ * Parses a comma-separated env list (trim, drop empties). Empty / unset → `[]`.
  */
-export function parseOidcAllowedEmails(raw: string | undefined): string[] {
+export function parseCommaSeparatedEnvList(raw: string | undefined): string[] {
   if (raw === undefined || raw.trim() === '') {
     return [];
   }
@@ -115,6 +114,14 @@ export function parseOidcAllowedEmails(raw: string | undefined): string[] {
     .split(',')
     .map(part => part.trim())
     .filter(part => part.length > 0);
+}
+
+/**
+ * Parses `OIDC_ALLOWED_EMAILS`: comma-separated exact addresses and/or globs
+ * (`*@company.com`). Empty / unset → no allowlist (any authenticated user may sign in).
+ */
+export function parseOidcAllowedEmails(raw: string | undefined): string[] {
+  return parseCommaSeparatedEnvList(raw);
 }
 
 /** Parses a positive-integer env var, falling back to `defaultValue` when unset/blank. */
@@ -654,6 +661,17 @@ export type DistributedServerConfiguration = SharedServerConfiguration & {
    * Env: `TRUEFOUNDRY_SANDBOX_SETTINGS`.
    */
   TRUEFOUNDRY_SANDBOX_SETTINGS: string | undefined;
+  /**
+   * Optional allowlist of model FQNs (`provider/model`) for the tenant named by
+   * `TRUEFOUNDRY_MODEL_FILTER_TENANT_ID`. Empty / unset → no filtering. Other tenants are unaffected.
+   * Env: `TRUEFOUNDRY_MODEL_FILTER`.
+   */
+  TRUEFOUNDRY_MODEL_FILTER: string[];
+  /**
+   * Tenant id that receives `TRUEFOUNDRY_MODEL_FILTER` when that allowlist is non-empty.
+   * Env: `TRUEFOUNDRY_MODEL_FILTER_TENANT_ID`. Default `internal`.
+   */
+  TRUEFOUNDRY_MODEL_FILTER_TENANT_ID: string;
 };
 
 export type ServerConfiguration = StandaloneServerConfiguration | DistributedServerConfiguration;
@@ -829,6 +847,9 @@ const configuration: ServerConfiguration = standalone
       TRUEFOUNDRY_SANDBOX_API_KEY: getEnv('TRUEFOUNDRY_SANDBOX_API_KEY', { required: false }),
       TRUEFOUNDRY_SANDBOX_SERVER_URL: getEnv('TRUEFOUNDRY_SANDBOX_SERVER_URL', { required: false }),
       TRUEFOUNDRY_SANDBOX_SETTINGS: getEnv('TRUEFOUNDRY_SANDBOX_SETTINGS', { required: false }),
+      TRUEFOUNDRY_MODEL_FILTER: parseCommaSeparatedEnvList(getEnv('TRUEFOUNDRY_MODEL_FILTER', { required: false })),
+      TRUEFOUNDRY_MODEL_FILTER_TENANT_ID:
+        getEnv('TRUEFOUNDRY_MODEL_FILTER_TENANT_ID', { defaultValue: 'internal' }) ?? 'internal',
     };
 
 export function isOidcConfigured(

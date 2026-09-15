@@ -1,5 +1,6 @@
 import type { Logger } from 'winston';
 import type { RequestContext } from '../auth/identity';
+import configuration from '../config';
 import type { AgentRecord } from '../db/agentStore';
 import {
   flattenProviderModels,
@@ -94,11 +95,20 @@ export class TrueFoundryModelProviderStore<TTransaction = never> implements IMod
       this.#client.listGatewayInstallations(agentToken),
     ]);
     const gatewayUrl = resolveDefaultGatewayUrl(installations);
+    let models = mapEnabledModels({ integrations });
+    if (
+      !configuration.STANDALONE &&
+      input.tenant_id === configuration.TRUEFOUNDRY_MODEL_FILTER_TENANT_ID &&
+      configuration.TRUEFOUNDRY_MODEL_FILTER.length > 0
+    ) {
+      const allowed = new Set(configuration.TRUEFOUNDRY_MODEL_FILTER);
+      models = models.filter(model => allowed.has(`${model.accountName}/${model.modelName}`));
+    }
     return toRecords({
       tenant_id: input.tenant_id,
       gatewayUrl,
       accessToken: userToken,
-      models: mapEnabledModels({ integrations }),
+      models,
     });
   }
 }
