@@ -762,7 +762,8 @@
           "zai",
           "moonshot",
           "alibaba",
-          "together"
+          "together",
+          "openrouter"
         ],
         "type": "string"
       },
@@ -878,6 +879,35 @@
           "id",
           "type",
           "function"
+        ],
+        "type": "object"
+      },
+      "ChatInstructionSource": {
+        "additionalProperties": false,
+        "properties": {
+          "excerpt": {
+            "description": "Short quote from the transcript used as evidence.",
+            "minLength": 1,
+            "type": "string"
+          },
+          "role": {
+            "description": "Speaker of the excerpt.",
+            "enum": [
+              "user",
+              "assistant"
+            ],
+            "type": "string"
+          },
+          "turn_id": {
+            "description": "Turn that contributed this excerpt.",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "turn_id",
+          "role",
+          "excerpt"
         ],
         "type": "object"
       },
@@ -1255,8 +1285,44 @@
         "properties": {},
         "type": "object"
       },
+      "DeleteMCPServerResponse": {
+        "properties": {},
+        "type": "object"
+      },
+      "DeleteModelProviderResponse": {
+        "properties": {},
+        "type": "object"
+      },
       "DeleteScheduleResponse": {
         "properties": {},
+        "type": "object"
+      },
+      "DeleteSkillResponse": {
+        "properties": {},
+        "type": "object"
+      },
+      "DiscoveredModel": {
+        "additionalProperties": false,
+        "properties": {
+          "context_length": {
+            "description": "Maximum context window in tokens, when the provider reports one.",
+            "exclusiveMinimum": 0,
+            "type": "integer"
+          },
+          "max_output_tokens": {
+            "description": "Maximum output tokens, when the provider reports one.",
+            "exclusiveMinimum": 0,
+            "type": "integer"
+          },
+          "model_id": {
+            "description": "Upstream, provider-specific identifier sent to the provider API.",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "model_id"
+        ],
         "type": "object"
       },
       "DynamicSubAgentsConfig": {
@@ -1388,6 +1454,47 @@
           "auth",
           "models",
           "type"
+        ],
+        "type": "object"
+      },
+      "GenerateSessionInstructionsResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/GeneratedSessionInstructions"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "GeneratedSessionInstructions": {
+        "additionalProperties": false,
+        "properties": {
+          "current_instructions": {
+            "description": "Instructions currently on the session or named agent, if any.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "instructions": {
+            "description": "Suggested system instructions. Not applied until the client saves them.",
+            "minLength": 1,
+            "type": "string"
+          },
+          "sources": {
+            "description": "Transcript excerpts the suggestion was inferred from.",
+            "items": {
+              "$ref": "#/components/schemas/ChatInstructionSource"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "instructions",
+          "current_instructions",
+          "sources"
         ],
         "type": "object"
       },
@@ -2240,6 +2347,20 @@
           "data": {
             "items": {
               "$ref": "#/components/schemas/AvailableSkill"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "ListDiscoveredModelsResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/DiscoveredModel"
             },
             "type": "array"
           }
@@ -3223,6 +3344,7 @@
             "google-gemini": "#/components/schemas/GoogleGeminiModelProvider",
             "moonshot": "#/components/schemas/MoonshotModelProvider",
             "openai": "#/components/schemas/OpenAIModelProvider",
+            "openrouter": "#/components/schemas/OpenRouterModelProvider",
             "together": "#/components/schemas/TogetherAIModelProvider",
             "truefoundry": "#/components/schemas/TrueFoundryModelProvider",
             "zai": "#/components/schemas/ZaiModelProvider"
@@ -3250,6 +3372,9 @@
           },
           {
             "$ref": "#/components/schemas/TogetherAIModelProvider"
+          },
+          {
+            "$ref": "#/components/schemas/OpenRouterModelProvider"
           },
           {
             "$ref": "#/components/schemas/AlibabaModelProvider"
@@ -3319,6 +3444,40 @@
           "type": {
             "enum": [
               "openai"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "auth",
+          "models",
+          "type"
+        ],
+        "type": "object"
+      },
+      "OpenRouterModelProvider": {
+        "additionalProperties": false,
+        "properties": {
+          "auth": {
+            "$ref": "#/components/schemas/ModelProviderAuth"
+          },
+          "base_url": {
+            "default": "https://openrouter.ai/api/v1",
+            "description": "Override of the provider's default API base URL.",
+            "format": "uri",
+            "type": "string"
+          },
+          "models": {
+            "description": "Models exposed by this provider (at least one).",
+            "items": {
+              "$ref": "#/components/schemas/ConfiguredModel"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "type": {
+            "enum": [
+              "openrouter"
             ],
             "type": "string"
           }
@@ -8562,6 +8721,95 @@
         "x-fern-sdk-method-name": "list_events"
       }
     },
+    "/api/v1/sessions/{session_id}/generate-instructions": {
+      "post": {
+        "description": "Draft system instructions from this session's transcript and current instructions. The suggestion is not saved. The client must show it for edit and apply it with a separate session or agent update. Short chats that do not establish behavior return 422.",
+        "parameters": [
+          {
+            "description": "Session identifier.",
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "description": "Session identifier.",
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerateSessionInstructionsResponse"
+                }
+              }
+            },
+            "description": "Suggested instructions and the transcript excerpts they came from."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "The session event log could not be read because of a conflicting store state."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "Caller is not the session creator."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "Session or referenced turn not found."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "The chat is too short to infer durable instructions, the named agent is missing, or the session model is not configured."
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "The model call to draft instructions failed."
+          }
+        },
+        "summary": "Generate system instructions from chat history",
+        "tags": [
+          "Agent Sessions"
+        ],
+        "x-fern-sdk-group-name": [
+          "sessions"
+        ],
+        "x-fern-sdk-method-name": "generate_instructions"
+      }
+    },
     "/api/v1/sessions/{session_id}/turns": {
       "get": {
         "description": "List turns for a session (newest first by default), token-paginated. Only the session creator may list turns.",
@@ -9404,6 +9652,63 @@
       }
     },
     "/api/v1/settings/mcp-servers/{name}": {
+      "delete": {
+        "description": "Permanently removes the configured MCP server by name, including any stored OAuth tokens and pending authorizations. Idempotent if already gone.",
+        "parameters": [
+          {
+            "description": "MCP server name.",
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "description": "MCP server name.",
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteMCPServerResponse"
+                }
+              }
+            },
+            "description": "MCP server deleted."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "OIDC is configured and the request has no valid session cookie."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "OIDC is configured and the caller is authenticated but not an admin."
+          }
+        },
+        "summary": "Delete an MCP server",
+        "tags": [
+          "MCP Servers"
+        ],
+        "x-fern-sdk-group-name": [
+          "settings",
+          "mcpServers"
+        ],
+        "x-fern-sdk-method-name": "delete"
+      },
       "get": {
         "description": "A single MCP server by name, with nested live auth_status (settings / admin projection). Header auth values are redacted.",
         "parameters": [
@@ -9614,6 +9919,144 @@
           "modelProviders"
         ],
         "x-fern-sdk-method-name": "create_or_update"
+      }
+    },
+    "/api/v1/settings/model-providers/{name}": {
+      "delete": {
+        "description": "Permanently removes the configured model provider by name. Idempotent if already gone.",
+        "parameters": [
+          {
+            "description": "Model provider name.",
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "description": "Model provider name.",
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteModelProviderResponse"
+                }
+              }
+            },
+            "description": "Model provider deleted."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "OIDC is configured and the request has no valid session cookie."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "OIDC is configured and the caller is authenticated but not an admin."
+          },
+          "424": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "Unsupported operation because the model providers are managed by external system"
+          }
+        },
+        "summary": "Delete a model provider",
+        "tags": [
+          "Models"
+        ],
+        "x-fern-sdk-group-name": [
+          "settings",
+          "modelProviders"
+        ],
+        "x-fern-sdk-method-name": "delete"
+      }
+    },
+    "/api/v1/settings/model-providers/{name}/discovered-models": {
+      "get": {
+        "description": "Asks the provider itself which models it serves, using the stored API key. Returns token limits when the provider reports them (Gemini does; the OpenAI-compatible list does not). The shipped catalog is a preset list and may lag the provider, so this is the current source of truth.",
+        "parameters": [
+          {
+            "description": "Model provider name.",
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "description": "Model provider name.",
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListDiscoveredModelsResponse"
+                }
+              }
+            },
+            "description": "Models the provider reports"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "No provider is configured under this name."
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "This provider type has no discovery adapter."
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "The provider was unreachable or rejected the request."
+          }
+        },
+        "summary": "List the models a configured provider reports",
+        "tags": [
+          "Models"
+        ],
+        "x-fern-sdk-group-name": [
+          "settings",
+          "modelProviders"
+        ],
+        "x-fern-sdk-method-name": "discovered_models"
       }
     },
     "/api/v1/settings/sandbox-providers": {
@@ -9868,6 +10311,75 @@
           "skills"
         ],
         "x-fern-sdk-method-name": "create_or_update"
+      }
+    },
+    "/api/v1/settings/skills/{name}": {
+      "delete": {
+        "description": "Permanently removes the configured skill by name. Idempotent if already gone.",
+        "parameters": [
+          {
+            "description": "Skill name.",
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "description": "Skill name.",
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteSkillResponse"
+                }
+              }
+            },
+            "description": "Skill deleted."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "OIDC is configured and the request has no valid session cookie."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "OIDC is configured and the caller is authenticated but not an admin."
+          },
+          "424": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "Unsupported because skills are managed by an external system."
+          }
+        },
+        "summary": "Delete a skill",
+        "tags": [
+          "Skills"
+        ],
+        "x-fern-sdk-group-name": [
+          "settings",
+          "skills"
+        ],
+        "x-fern-sdk-method-name": "delete"
       }
     },
     "/api/v1/skills": {

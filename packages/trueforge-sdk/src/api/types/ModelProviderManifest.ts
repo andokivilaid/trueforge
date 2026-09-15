@@ -10,6 +10,7 @@ export type ModelProviderManifest =
     | TrueForge.GoogleGeminiModelProvider
     | TrueForge.MoonshotModelProvider
     | TrueForge.OpenAiModelProvider
+    | TrueForge.OpenRouterModelProvider
     | TrueForge.TogetherAiModelProvider
     | TrueForge.TrueFoundryModelProvider
     | TrueForge.ZaiModelProvider;

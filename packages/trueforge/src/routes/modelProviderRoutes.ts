@@ -3,11 +3,13 @@
  * Discovery catalog lives at GET /api/v1/catalogs/model-providers.
  * Handlers are registered in apis/modelProviders.ts.
  */
-import { createRoute } from '@hono/zod-openapi';
+import { createRoute, z } from '@hono/zod-openapi';
 import { RequestErrorResponseSchema } from '../schemas/errors';
 import {
   CreateModelProviderRequestSchema,
+  DeleteModelProviderResponseSchema,
   GetModelProviderResponseSchema,
+  ListDiscoveredModelsResponseSchema,
   ListModelProvidersResponseSchema,
   UpdateModelProviderRequestSchema,
 } from '../schemas/modelProvider';
@@ -101,6 +103,75 @@ export const putModelProviderRoute = createRoute({
     424: {
       content: { 'application/json': { schema: RequestErrorResponseSchema } },
       description: 'Unsupported operation because the model providers are managed by external system',
+    },
+  },
+});
+
+const ModelProviderNameParamsSchema = z.object({
+  name: z.string().min(1).describe('Model provider name.'),
+});
+
+export const deleteModelProviderRoute = createRoute({
+  method: 'delete',
+  path: '/{name}',
+  tags: [OpenApiTag.MODELS],
+  summary: 'Delete a model provider',
+  description: 'Permanently removes the configured model provider by name. Idempotent if already gone.',
+  'x-fern-sdk-group-name': ['settings', 'modelProviders'],
+  'x-fern-sdk-method-name': 'delete',
+  request: {
+    params: ModelProviderNameParamsSchema,
+  },
+  responses: {
+    200: {
+      content: { 'application/json': { schema: DeleteModelProviderResponseSchema } },
+      description: 'Model provider deleted.',
+    },
+    401: {
+      content: { 'application/json': { schema: RequestErrorResponseSchema } },
+      description: 'OIDC is configured and the request has no valid session cookie.',
+    },
+    403: {
+      content: { 'application/json': { schema: RequestErrorResponseSchema } },
+      description: 'OIDC is configured and the caller is authenticated but not an admin.',
+    },
+    424: {
+      content: { 'application/json': { schema: RequestErrorResponseSchema } },
+      description: 'Unsupported operation because the model providers are managed by external system',
+    },
+  },
+});
+
+export const listDiscoveredModelsRoute = createRoute({
+  method: 'get',
+  path: '/{name}/discovered-models',
+  tags: [OpenApiTag.MODELS],
+  summary: 'List the models a configured provider reports',
+  description:
+    'Asks the provider itself which models it serves, using the stored API key. Returns token limits ' +
+    'when the provider reports them (Gemini does; the OpenAI-compatible list does not). The shipped ' +
+    'catalog is a preset list and may lag the provider, so this is the current source of truth.',
+  'x-fern-sdk-group-name': ['settings', 'modelProviders'],
+  'x-fern-sdk-method-name': 'discovered_models',
+  request: {
+    params: ModelProviderNameParamsSchema,
+  },
+  responses: {
+    200: {
+      content: { 'application/json': { schema: ListDiscoveredModelsResponseSchema } },
+      description: 'Models the provider reports',
+    },
+    404: {
+      content: { 'application/json': { schema: RequestErrorResponseSchema } },
+      description: 'No provider is configured under this name.',
+    },
+    501: {
+      content: { 'application/json': { schema: RequestErrorResponseSchema } },
+      description: 'This provider type has no discovery adapter.',
+    },
+    502: {
+      content: { 'application/json': { schema: RequestErrorResponseSchema } },
+      description: 'The provider was unreachable or rejected the request.',
     },
   },
 });

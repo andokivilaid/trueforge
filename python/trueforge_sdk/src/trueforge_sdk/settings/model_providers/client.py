@@ -4,7 +4,9 @@ import typing
 
 from ...core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ...core.request_options import RequestOptions
+from ...types.delete_model_provider_response import DeleteModelProviderResponse
 from ...types.get_model_provider_response import GetModelProviderResponse
+from ...types.list_discovered_models_response import ListDiscoveredModelsResponse
 from ...types.list_model_providers_response import ListModelProvidersResponse
 from ...types.model_provider_manifest import ModelProviderManifest
 from .raw_client import AsyncRawModelProvidersClient, RawModelProvidersClient
@@ -153,6 +155,74 @@ class ModelProvidersClient:
         )
         """
         _response = self._raw_client.create_or_update(manifest=manifest, request_options=request_options)
+        return _response.data
+
+    def delete(
+        self, *, name: str, request_options: typing.Optional[RequestOptions] = None
+    ) -> DeleteModelProviderResponse:
+        """
+        Permanently removes the configured model provider by name. Idempotent if already gone.
+
+        Parameters
+        ----------
+        name : str
+            Model provider name.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        DeleteModelProviderResponse
+            Model provider deleted.
+
+        Examples
+        --------
+        from trueforge_sdk import TrueForge
+
+        client = TrueForge(
+            token="YOUR_TOKEN",
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.settings.model_providers.delete(
+            name="name",
+        )
+        """
+        _response = self._raw_client.delete(name=name, request_options=request_options)
+        return _response.data
+
+    def discovered_models(
+        self, *, name: str, request_options: typing.Optional[RequestOptions] = None
+    ) -> ListDiscoveredModelsResponse:
+        """
+        Asks the provider itself which models it serves, using the stored API key. Returns token limits when the provider reports them (Gemini does; the OpenAI-compatible list does not). The shipped catalog is a preset list and may lag the provider, so this is the current source of truth.
+
+        Parameters
+        ----------
+        name : str
+            Model provider name.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ListDiscoveredModelsResponse
+            Models the provider reports
+
+        Examples
+        --------
+        from trueforge_sdk import TrueForge
+
+        client = TrueForge(
+            token="YOUR_TOKEN",
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.settings.model_providers.discovered_models(
+            name="name",
+        )
+        """
+        _response = self._raw_client.discovered_models(name=name, request_options=request_options)
         return _response.data
 
 
@@ -320,4 +390,88 @@ class AsyncModelProvidersClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.create_or_update(manifest=manifest, request_options=request_options)
+        return _response.data
+
+    async def delete(
+        self, *, name: str, request_options: typing.Optional[RequestOptions] = None
+    ) -> DeleteModelProviderResponse:
+        """
+        Permanently removes the configured model provider by name. Idempotent if already gone.
+
+        Parameters
+        ----------
+        name : str
+            Model provider name.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        DeleteModelProviderResponse
+            Model provider deleted.
+
+        Examples
+        --------
+        import asyncio
+
+        from trueforge_sdk import AsyncTrueForge
+
+        client = AsyncTrueForge(
+            token="YOUR_TOKEN",
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.settings.model_providers.delete(
+                name="name",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.delete(name=name, request_options=request_options)
+        return _response.data
+
+    async def discovered_models(
+        self, *, name: str, request_options: typing.Optional[RequestOptions] = None
+    ) -> ListDiscoveredModelsResponse:
+        """
+        Asks the provider itself which models it serves, using the stored API key. Returns token limits when the provider reports them (Gemini does; the OpenAI-compatible list does not). The shipped catalog is a preset list and may lag the provider, so this is the current source of truth.
+
+        Parameters
+        ----------
+        name : str
+            Model provider name.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ListDiscoveredModelsResponse
+            Models the provider reports
+
+        Examples
+        --------
+        import asyncio
+
+        from trueforge_sdk import AsyncTrueForge
+
+        client = AsyncTrueForge(
+            token="YOUR_TOKEN",
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.settings.model_providers.discovered_models(
+                name="name",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.discovered_models(name=name, request_options=request_options)
         return _response.data

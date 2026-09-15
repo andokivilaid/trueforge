@@ -168,6 +168,12 @@ export class TrueFoundryMcpServerStore<TTransaction = never> implements IMcpServ
     return trueFoundryManaged();
   }
 
+  deleteServer(input: GetMcpServerInput, transaction?: TTransaction): Promise<void> {
+    void input;
+    void transaction;
+    return trueFoundryManaged();
+  }
+
   saveClient(params: { id: string; record: OAuthClientRecord }, transaction?: TTransaction): Promise<void> {
     void params;
     void transaction;

@@ -5,6 +5,7 @@ minimumReleaseAge: 0
 trustLockfile: true
 confirmModulesPurge: false
 allowBuilds:
+  '@openrouter/sdk': false
   '@openuidev/lang-core': true
   '@parcel/watcher': true
   '@swc/core': true

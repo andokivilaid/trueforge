@@ -27,6 +27,11 @@ export interface ListSkillsInput {
   names: readonly string[] | undefined;
 }
 
+export interface GetSkillInput {
+  tenant_id: string;
+  name: string;
+}
+
 export interface CreateSkillInput {
   tenant_id: string;
   name: string;
@@ -61,6 +66,8 @@ export interface ISkillStore<TTransaction = never> {
   createSkill(input: CreateSkillInput, transaction?: TTransaction): Promise<SkillRecord>;
   /** Single-row write: creates the skill or replaces the whole manifest. */
   upsertSkill(input: UpsertSkillInput, transaction?: TTransaction): Promise<SkillRecord>;
+  /** Permanently removes the skill row. Idempotent if already gone. */
+  deleteSkill(input: GetSkillInput, transaction?: TTransaction): Promise<void>;
   listSkillVersions(input: { name: string }): Promise<SkillVersion[]>;
   /** Admit AgentSpec skill refs (git store or TrueFoundry SFY resolve with caller token). */
   validateAgentSkills(input: AgentSkillsInput, transaction?: TTransaction): Promise<void>;

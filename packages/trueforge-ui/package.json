@@ -99,6 +99,7 @@
     "@truefoundry/trueforge-sdk": "workspace:*",
     "chart.js": "^4.5.1",
     "clsx": "^2.1.1",
+    "fuzzysort": "^4.0.2",
     "lucide-react": "^0.562.0",
     "monaco-editor": "^0.56.0",
     "partial-json": "^0.1.7",

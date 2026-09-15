@@ -124,6 +124,7 @@ export const UpdateSkillRequestSchema = z
   .openapi('UpdateSkillRequest');
 
 export const GetSkillResponseSchema = z.object({ data: ConfiguredSkillSchema }).openapi('GetSkillResponse');
+export const DeleteSkillResponseSchema = z.object({}).openapi('DeleteSkillResponse');
 
 /** Chat/composer read view — discovery fields only. */
 export const AvailableSkillSchema = z

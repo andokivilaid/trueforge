@@ -6,6 +6,7 @@ import {
   SkillNameConflictError,
   type AgentSkillsInput,
   type CreateSkillInput,
+  type GetSkillInput,
   type ISkillStore,
   type ListSkillsInput,
   type SkillRecord,
@@ -88,6 +89,11 @@ export class SqliteSkillStore implements ISkillStore<Transaction<Database>> {
       )
       .returning(recordColumns)
       .executeTakeFirstOrThrow();
+  }
+
+  async deleteSkill(input: GetSkillInput, transaction?: Transaction<Database>): Promise<void> {
+    const db = transaction ?? this.#db;
+    await db.deleteFrom('skill').where('tenant_id', '=', input.tenant_id).where('name', '=', input.name).execute();
   }
 
   listSkillVersions(input: { name: string }): Promise<SkillVersion[]> {

@@ -38,6 +38,8 @@ export const ConfiguredModelSchema = z
   .strict()
   .openapi('ConfiguredModel');
 
+export type ConfiguredModel = z.infer<typeof ConfiguredModelSchema>;
+
 /** Adds issues when two models share a `model_id` or a `name`. */
 export function refineUniqueModels(models: { model_id: string; name: string }[], ctx: z.RefinementCtx): void {
   uniqueNames(models, ctx);
@@ -127,6 +129,11 @@ const TogetherAIModelProviderSchema = wellKnownProviderSchema({
   base_url: 'https://api.together.xyz/v1',
 }).openapi('TogetherAIModelProvider');
 
+const OpenRouterModelProviderSchema = wellKnownProviderSchema({
+  type: 'openrouter',
+  base_url: 'https://openrouter.ai/api/v1',
+}).openapi('OpenRouterModelProvider');
+
 const AlibabaModelProviderSchema = wellKnownProviderSchema({
   type: 'alibaba',
   base_url: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1',
@@ -177,6 +184,7 @@ const ModelProviderBodySchema = z
     ZaiModelProviderSchema,
     MoonshotModelProviderSchema,
     TogetherAIModelProviderSchema,
+    OpenRouterModelProviderSchema,
     AlibabaModelProviderSchema,
     TrueFoundryModelProviderSchema,
     CustomModelProviderSchema,
@@ -224,6 +232,34 @@ export const ListModelProvidersResponseSchema = z
     data: z.array(ConfiguredModelProviderSchema),
   })
   .openapi('ListModelProvidersResponse');
+
+/** A model the provider itself reports, for the UI to copy into a manifest write. */
+export const DiscoveredModelSchema = z
+  .object({
+    model_id: z.string().min(1).describe('Upstream, provider-specific identifier sent to the provider API.'),
+    context_length: z
+      .number()
+      .int()
+      .positive()
+      .optional()
+      .describe('Maximum context window in tokens, when the provider reports one.'),
+    max_output_tokens: z
+      .number()
+      .int()
+      .positive()
+      .optional()
+      .describe('Maximum output tokens, when the provider reports one.'),
+  })
+  .strict()
+  .openapi('DiscoveredModel');
+
+export const ListDiscoveredModelsResponseSchema = z
+  .object({
+    data: z.array(DiscoveredModelSchema),
+  })
+  .openapi('ListDiscoveredModelsResponse');
+
+export const DeleteModelProviderResponseSchema = z.object({}).openapi('DeleteModelProviderResponse');
 
 /** Provider identity on the models list read view. */
 export const AvailableModelProviderSchema = z

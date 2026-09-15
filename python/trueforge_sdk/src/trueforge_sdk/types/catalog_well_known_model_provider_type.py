@@ -16,6 +16,7 @@ class CatalogWellKnownModelProviderType(enum.StrEnum):
     MOONSHOT = "moonshot"
     ALIBABA = "alibaba"
     TOGETHER = "together"
+    OPENROUTER = "openrouter"
     _UNKNOWN = "__CATALOGWELLKNOWNMODELPROVIDERTYPE_UNKNOWN__"
     """
     This member is used for forward compatibility. If the value is not recognized by the enum, it will be stored here, and the raw value is accessible through `.value`.
@@ -37,6 +38,7 @@ class CatalogWellKnownModelProviderType(enum.StrEnum):
         moonshot: typing.Callable[[], T_Result],
         alibaba: typing.Callable[[], T_Result],
         together: typing.Callable[[], T_Result],
+        openrouter: typing.Callable[[], T_Result],
         _unknown_member: typing.Callable[[str], T_Result],
     ) -> T_Result:
         if self is CatalogWellKnownModelProviderType.OPENAI:
@@ -55,4 +57,6 @@ class CatalogWellKnownModelProviderType(enum.StrEnum):
             return alibaba()
         if self is CatalogWellKnownModelProviderType.TOGETHER:
             return together()
+        if self is CatalogWellKnownModelProviderType.OPENROUTER:
+            return openrouter()
         return _unknown_member(self._value_)

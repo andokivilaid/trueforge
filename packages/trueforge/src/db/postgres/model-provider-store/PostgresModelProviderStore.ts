@@ -129,4 +129,13 @@ export class PostgresModelProviderStore implements IModelProviderStore<Transacti
   async listModels(input: ListModelProvidersInput, transaction?: Transaction<Database>): Promise<AvailableModel[]> {
     return flattenProviderModels(await this.listProviders(input, transaction));
   }
+
+  async deleteProvider(input: GetModelProviderForUpdateInput, transaction?: Transaction<Database>): Promise<void> {
+    const db = transaction ?? this.#db;
+    await db
+      .deleteFrom('model_provider')
+      .where('tenant_id', '=', input.tenant_id)
+      .where('name', '=', input.name)
+      .execute();
+  }
 }

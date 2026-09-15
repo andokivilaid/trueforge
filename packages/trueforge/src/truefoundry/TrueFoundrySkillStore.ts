@@ -4,6 +4,7 @@ import type { RequestContext } from '../auth/identity';
 import type {
   AgentSkillsInput,
   CreateSkillInput,
+  GetSkillInput,
   ISkillStore,
   ListSkillsInput,
   SkillRecord,
@@ -138,6 +139,12 @@ export class TrueFoundrySkillStore<TTransaction = never>
   }
 
   upsertSkill(input: UpsertSkillInput, transaction?: TTransaction): Promise<SkillRecord> {
+    void input;
+    void transaction;
+    return trueFoundryManaged();
+  }
+
+  deleteSkill(input: GetSkillInput, transaction?: TTransaction): Promise<void> {
     void input;
     void transaction;
     return trueFoundryManaged();

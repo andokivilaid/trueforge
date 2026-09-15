@@ -245,5 +245,8 @@ export function createConnectorCatalog(
       const body = await client.mcpServers.deleteAuthorization(req.id);
       return toUiConnector(body.data);
     },
+    deleteConnector: async req => {
+      await client.settings.mcpServers.delete(req.id);
+    },
   };
 }

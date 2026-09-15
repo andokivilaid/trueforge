@@ -48,6 +48,8 @@ if typing.TYPE_CHECKING:
     from .chat_completion_content_part_text import ChatCompletionContentPartText
     from .chat_completion_message_tool_call import ChatCompletionMessageToolCall
     from .chat_completion_message_tool_call_function import ChatCompletionMessageToolCallFunction
+    from .chat_instruction_source import ChatInstructionSource
+    from .chat_instruction_source_role import ChatInstructionSourceRole
     from .compaction_config import CompactionConfig
     from .configured_mcp_server import ConfiguredMcpServer
     from .configured_model import ConfiguredModel
@@ -62,13 +64,19 @@ if typing.TYPE_CHECKING:
     from .custom_model_provider import CustomModelProvider
     from .daytona_sandbox_provider_auth import DaytonaSandboxProviderAuth
     from .delete_agent_response import DeleteAgentResponse
+    from .delete_mcp_server_response import DeleteMcpServerResponse
+    from .delete_model_provider_response import DeleteModelProviderResponse
     from .delete_schedule_response import DeleteScheduleResponse
+    from .delete_skill_response import DeleteSkillResponse
+    from .discovered_model import DiscoveredModel
     from .dynamic_sub_agents_config import DynamicSubAgentsConfig
     from .e2b_sandbox_provider_auth import E2BSandboxProviderAuth
     from .extended_chunk_delta_tool_call import ExtendedChunkDeltaToolCall
     from .file_content import FileContent
     from .finish_reason import FinishReason
     from .fireworks_model_provider import FireworksModelProvider
+    from .generate_session_instructions_response import GenerateSessionInstructionsResponse
+    from .generated_session_instructions import GeneratedSessionInstructions
     from .generative_ui_config import GenerativeUiConfig
     from .get_agent_code_snippets_response import GetAgentCodeSnippetsResponse
     from .get_agent_response import GetAgentResponse
@@ -99,6 +107,7 @@ if typing.TYPE_CHECKING:
     from .list_available_mcp_servers_response import ListAvailableMcpServersResponse
     from .list_available_models_response import ListAvailableModelsResponse
     from .list_available_skills_response import ListAvailableSkillsResponse
+    from .list_discovered_models_response import ListDiscoveredModelsResponse
     from .list_mcp_server_tools_response import ListMcpServerToolsResponse
     from .list_mcp_servers_response import ListMcpServersResponse
     from .list_model_providers_response import ListModelProvidersResponse
@@ -147,6 +156,7 @@ if typing.TYPE_CHECKING:
     from .model_provider_manifest import ModelProviderManifest
     from .moonshot_model_provider import MoonshotModelProvider
     from .open_ai_model_provider import OpenAiModelProvider
+    from .open_router_model_provider import OpenRouterModelProvider
     from .permission_resource_type import PermissionResourceType
     from .previous_turn_id_input import PreviousTurnIdInput
     from .raw_tool_call import RawToolCall
@@ -285,6 +295,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ChatCompletionContentPartText": ".chat_completion_content_part_text",
     "ChatCompletionMessageToolCall": ".chat_completion_message_tool_call",
     "ChatCompletionMessageToolCallFunction": ".chat_completion_message_tool_call_function",
+    "ChatInstructionSource": ".chat_instruction_source",
+    "ChatInstructionSourceRole": ".chat_instruction_source_role",
     "CompactionConfig": ".compaction_config",
     "ConfiguredMcpServer": ".configured_mcp_server",
     "ConfiguredModel": ".configured_model",
@@ -299,13 +311,19 @@ _dynamic_imports: typing.Dict[str, str] = {
     "CustomModelProvider": ".custom_model_provider",
     "DaytonaSandboxProviderAuth": ".daytona_sandbox_provider_auth",
     "DeleteAgentResponse": ".delete_agent_response",
+    "DeleteMcpServerResponse": ".delete_mcp_server_response",
+    "DeleteModelProviderResponse": ".delete_model_provider_response",
     "DeleteScheduleResponse": ".delete_schedule_response",
+    "DeleteSkillResponse": ".delete_skill_response",
+    "DiscoveredModel": ".discovered_model",
     "DynamicSubAgentsConfig": ".dynamic_sub_agents_config",
     "E2BSandboxProviderAuth": ".e2b_sandbox_provider_auth",
     "ExtendedChunkDeltaToolCall": ".extended_chunk_delta_tool_call",
     "FileContent": ".file_content",
     "FinishReason": ".finish_reason",
     "FireworksModelProvider": ".fireworks_model_provider",
+    "GenerateSessionInstructionsResponse": ".generate_session_instructions_response",
+    "GeneratedSessionInstructions": ".generated_session_instructions",
     "GenerativeUiConfig": ".generative_ui_config",
     "GetAgentCodeSnippetsResponse": ".get_agent_code_snippets_response",
     "GetAgentResponse": ".get_agent_response",
@@ -336,6 +354,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ListAvailableMcpServersResponse": ".list_available_mcp_servers_response",
     "ListAvailableModelsResponse": ".list_available_models_response",
     "ListAvailableSkillsResponse": ".list_available_skills_response",
+    "ListDiscoveredModelsResponse": ".list_discovered_models_response",
     "ListMcpServerToolsResponse": ".list_mcp_server_tools_response",
     "ListMcpServersResponse": ".list_mcp_servers_response",
     "ListModelProvidersResponse": ".list_model_providers_response",
@@ -384,6 +403,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ModelProviderManifest": ".model_provider_manifest",
     "MoonshotModelProvider": ".moonshot_model_provider",
     "OpenAiModelProvider": ".open_ai_model_provider",
+    "OpenRouterModelProvider": ".open_router_model_provider",
     "PermissionResourceType": ".permission_resource_type",
     "PreviousTurnIdInput": ".previous_turn_id_input",
     "RawToolCall": ".raw_tool_call",
@@ -544,6 +564,8 @@ __all__ = [
     "ChatCompletionContentPartText",
     "ChatCompletionMessageToolCall",
     "ChatCompletionMessageToolCallFunction",
+    "ChatInstructionSource",
+    "ChatInstructionSourceRole",
     "CompactionConfig",
     "ConfiguredMcpServer",
     "ConfiguredModel",
@@ -558,13 +580,19 @@ __all__ = [
     "CustomModelProvider",
     "DaytonaSandboxProviderAuth",
     "DeleteAgentResponse",
+    "DeleteMcpServerResponse",
+    "DeleteModelProviderResponse",
     "DeleteScheduleResponse",
+    "DeleteSkillResponse",
+    "DiscoveredModel",
     "DynamicSubAgentsConfig",
     "E2BSandboxProviderAuth",
     "ExtendedChunkDeltaToolCall",
     "FileContent",
     "FinishReason",
     "FireworksModelProvider",
+    "GenerateSessionInstructionsResponse",
+    "GeneratedSessionInstructions",
     "GenerativeUiConfig",
     "GetAgentCodeSnippetsResponse",
     "GetAgentResponse",
@@ -595,6 +623,7 @@ __all__ = [
     "ListAvailableMcpServersResponse",
     "ListAvailableModelsResponse",
     "ListAvailableSkillsResponse",
+    "ListDiscoveredModelsResponse",
     "ListMcpServerToolsResponse",
     "ListMcpServersResponse",
     "ListModelProvidersResponse",
@@ -643,6 +672,7 @@ __all__ = [
     "ModelProviderManifest",
     "MoonshotModelProvider",
     "OpenAiModelProvider",
+    "OpenRouterModelProvider",
     "PermissionResourceType",
     "PreviousTurnIdInput",
     "RawToolCall",
