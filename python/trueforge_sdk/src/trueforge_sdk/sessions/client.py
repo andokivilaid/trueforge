@@ -9,6 +9,7 @@ from ..core.request_options import RequestOptions
 from ..core.stream import AsyncStream, Stream, StreamEvent
 from ..types.cancel_session_response import CancelSessionResponse
 from ..types.create_session_agent import CreateSessionAgent
+from ..types.generate_session_instructions_response import GenerateSessionInstructionsResponse
 from ..types.get_session_response import GetSessionResponse
 from ..types.get_turn_response import GetTurnResponse
 from ..types.list_session_events_response import ListSessionEventsResponse
@@ -376,6 +377,40 @@ class SessionsClient:
             limit=limit,
             request_options=request_options,
         )
+
+    def generate_instructions(
+        self, *, session_id: str, request_options: typing.Optional[RequestOptions] = None
+    ) -> GenerateSessionInstructionsResponse:
+        """
+        Draft system instructions from this session's transcript and current instructions. The suggestion is not saved. The client must show it for edit and apply it with a separate session or agent update. Short chats that do not establish behavior return 422.
+
+        Parameters
+        ----------
+        session_id : str
+            Session identifier.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        GenerateSessionInstructionsResponse
+            Suggested instructions and the transcript excerpts they came from.
+
+        Examples
+        --------
+        from trueforge_sdk import TrueForge
+
+        client = TrueForge(
+            token="YOUR_TOKEN",
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.sessions.generate_instructions(
+            session_id="session_id",
+        )
+        """
+        _response = self._raw_client.generate_instructions(session_id=session_id, request_options=request_options)
+        return _response.data
 
     def list_turns(
         self,
@@ -1142,6 +1177,48 @@ class AsyncSessionsClient:
             limit=limit,
             request_options=request_options,
         )
+
+    async def generate_instructions(
+        self, *, session_id: str, request_options: typing.Optional[RequestOptions] = None
+    ) -> GenerateSessionInstructionsResponse:
+        """
+        Draft system instructions from this session's transcript and current instructions. The suggestion is not saved. The client must show it for edit and apply it with a separate session or agent update. Short chats that do not establish behavior return 422.
+
+        Parameters
+        ----------
+        session_id : str
+            Session identifier.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        GenerateSessionInstructionsResponse
+            Suggested instructions and the transcript excerpts they came from.
+
+        Examples
+        --------
+        import asyncio
+
+        from trueforge_sdk import AsyncTrueForge
+
+        client = AsyncTrueForge(
+            token="YOUR_TOKEN",
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.sessions.generate_instructions(
+                session_id="session_id",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.generate_instructions(session_id=session_id, request_options=request_options)
+        return _response.data
 
     async def list_turns(
         self,

@@ -850,6 +850,35 @@
         ],
         "type": "object"
       },
+      "ChatInstructionSource": {
+        "additionalProperties": false,
+        "properties": {
+          "excerpt": {
+            "description": "Short quote from the transcript used as evidence.",
+            "minLength": 1,
+            "type": "string"
+          },
+          "role": {
+            "description": "Speaker of the excerpt.",
+            "enum": [
+              "user",
+              "assistant"
+            ],
+            "type": "string"
+          },
+          "turn_id": {
+            "description": "Turn that contributed this excerpt.",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "turn_id",
+          "role",
+          "excerpt"
+        ],
+        "type": "object"
+      },
       "CompactionConfig": {
         "additionalProperties": false,
         "default": {
@@ -1378,6 +1407,47 @@
           "auth",
           "models",
           "type"
+        ],
+        "type": "object"
+      },
+      "GenerateSessionInstructionsResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/GeneratedSessionInstructions"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "GeneratedSessionInstructions": {
+        "additionalProperties": false,
+        "properties": {
+          "current_instructions": {
+            "description": "Instructions currently on the session or named agent, if any.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "instructions": {
+            "description": "Suggested system instructions. Not applied until the client saves them.",
+            "minLength": 1,
+            "type": "string"
+          },
+          "sources": {
+            "description": "Transcript excerpts the suggestion was inferred from.",
+            "items": {
+              "$ref": "#/components/schemas/ChatInstructionSource"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "instructions",
+          "current_instructions",
+          "sources"
         ],
         "type": "object"
       },
@@ -8566,6 +8636,95 @@
           "sessions"
         ],
         "x-fern-sdk-method-name": "list_events"
+      }
+    },
+    "/api/v1/sessions/{session_id}/generate-instructions": {
+      "post": {
+        "description": "Draft system instructions from this session's transcript and current instructions. The suggestion is not saved. The client must show it for edit and apply it with a separate session or agent update. Short chats that do not establish behavior return 422.",
+        "parameters": [
+          {
+            "description": "Session identifier.",
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "description": "Session identifier.",
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerateSessionInstructionsResponse"
+                }
+              }
+            },
+            "description": "Suggested instructions and the transcript excerpts they came from."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "The session event log could not be read because of a conflicting store state."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "Caller is not the session creator."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "Session or referenced turn not found."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "The chat is too short to infer durable instructions, the named agent is missing, or the session model is not configured."
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestErrorResponse"
+                }
+              }
+            },
+            "description": "The model call to draft instructions failed."
+          }
+        },
+        "summary": "Generate system instructions from chat history",
+        "tags": [
+          "Agent Sessions"
+        ],
+        "x-fern-sdk-group-name": [
+          "sessions"
+        ],
+        "x-fern-sdk-method-name": "generate_instructions"
       }
     },
     "/api/v1/sessions/{session_id}/turns": {

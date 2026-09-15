@@ -44,6 +44,8 @@ if typing.TYPE_CHECKING:
     from .chat_completion_content_part_text import ChatCompletionContentPartText
     from .chat_completion_message_tool_call import ChatCompletionMessageToolCall
     from .chat_completion_message_tool_call_function import ChatCompletionMessageToolCallFunction
+    from .chat_instruction_source import ChatInstructionSource
+    from .chat_instruction_source_role import ChatInstructionSourceRole
     from .compaction_config import CompactionConfig
     from .configured_mcp_server import ConfiguredMcpServer
     from .configured_model import ConfiguredModel
@@ -68,6 +70,8 @@ if typing.TYPE_CHECKING:
     from .file_content import FileContent
     from .finish_reason import FinishReason
     from .fireworks_model_provider import FireworksModelProvider
+    from .generate_session_instructions_response import GenerateSessionInstructionsResponse
+    from .generated_session_instructions import GeneratedSessionInstructions
     from .generative_ui_config import GenerativeUiConfig
     from .get_agent_code_snippets_response import GetAgentCodeSnippetsResponse
     from .get_agent_response import GetAgentResponse
@@ -280,6 +284,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ChatCompletionContentPartText": ".chat_completion_content_part_text",
     "ChatCompletionMessageToolCall": ".chat_completion_message_tool_call",
     "ChatCompletionMessageToolCallFunction": ".chat_completion_message_tool_call_function",
+    "ChatInstructionSource": ".chat_instruction_source",
+    "ChatInstructionSourceRole": ".chat_instruction_source_role",
     "CompactionConfig": ".compaction_config",
     "ConfiguredMcpServer": ".configured_mcp_server",
     "ConfiguredModel": ".configured_model",
@@ -304,6 +310,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "FileContent": ".file_content",
     "FinishReason": ".finish_reason",
     "FireworksModelProvider": ".fireworks_model_provider",
+    "GenerateSessionInstructionsResponse": ".generate_session_instructions_response",
+    "GeneratedSessionInstructions": ".generated_session_instructions",
     "GenerativeUiConfig": ".generative_ui_config",
     "GetAgentCodeSnippetsResponse": ".get_agent_code_snippets_response",
     "GetAgentResponse": ".get_agent_response",
@@ -540,6 +548,8 @@ __all__ = [
     "ChatCompletionContentPartText",
     "ChatCompletionMessageToolCall",
     "ChatCompletionMessageToolCallFunction",
+    "ChatInstructionSource",
+    "ChatInstructionSourceRole",
     "CompactionConfig",
     "ConfiguredMcpServer",
     "ConfiguredModel",
@@ -564,6 +574,8 @@ __all__ = [
     "FileContent",
     "FinishReason",
     "FireworksModelProvider",
+    "GenerateSessionInstructionsResponse",
+    "GeneratedSessionInstructions",
     "GenerativeUiConfig",
     "GetAgentCodeSnippetsResponse",
     "GetAgentResponse",
